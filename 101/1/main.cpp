@@ -181,10 +181,10 @@ int main(int argc, const char** argv)
     while (key != 27) {
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
-        // r.set_model(get_model_matrix(angle));        
-        Eigen::Vector3f forv(x, y, z);
-        r.set_model(get_rotation_matrix(forv, angle));
-        // r.set_model(get_rotation_matrix_x_y_z(forv, angle));
+        // r.set_model(get_model_matrix(angle)); // 基础题
+        Eigen::Vector3f forv(x, y, z); // 提高题（1.罗德里格公式解法、2.欧拉角解法）
+        r.set_model(get_rotation_matrix(forv, angle)); // 提高题（1.罗德里格公式解法）
+        // r.set_model(get_rotation_matrix_x_y_z(forv, angle)); // 提高题（2.欧拉角解法）
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
