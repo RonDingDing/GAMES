@@ -47,16 +47,24 @@ Eigen::Matrix4f get_rotation_matrix(Vector3f axis, float angle)
     float x = norm[0];
     float y = norm[1];
     float z = norm[2];
+    
     double rotate = angle / 180.0f * M_PI;
     N << 0, -z, y,
          z, 0,  -x,
         -y, x,  0;
-    R = cos(rotate) * I + (1 - cos(rotate)) * norm * norm.transpose() + sin(rotate) * N;
+    if (0 == x && x == y && y == z) 
+    {
+        R = I;
+    } 
+    else 
+    {
+        R = cos(rotate) * I + (1 - cos(rotate)) * norm * norm.transpose() + sin(rotate) * N;
+    }
+   
     rotation << R(0, 0), R(0, 1), R(0, 2), 0,
                 R(1, 0), R(1, 1), R(1, 2), 0,
                 R(2, 0), R(2, 1), R(2, 2), 0,
                 0,       0,       0,       1;
-
     return rotation;
 }
 
