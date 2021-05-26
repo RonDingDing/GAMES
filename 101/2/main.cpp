@@ -28,10 +28,17 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
     return model;
 }
 
-Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
+
+Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
+                                      float zNear, float zFar)
 {
-    // TODO: Copy-paste your implementation from the previous assignment.
+    // Students will implement this function
+
     Eigen::Matrix4f projection;
+
+    // TODO: Implement this function
+    // Create the projection matrix for the given parameters.
+    // Then return it.
     Eigen::Matrix4f orth, persp_to_orth;
     float half_eye_angle = eye_fov / 2 / 180.0 * MY_PI;
     float n = -zNear;
@@ -54,6 +61,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float z
     
     projection = orth * persp_to_orth;
     return projection;
+
 }
 
 int main(int argc, const char** argv)
@@ -126,6 +134,8 @@ int main(int argc, const char** argv)
 
     while(key != 27)
     {
+        
+
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
         r.set_model(get_model_matrix(angle));
@@ -139,8 +149,8 @@ int main(int argc, const char** argv)
         cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
         cv::imshow("image", image);
         key = cv::waitKey(10);
-
-        std::cout << "frame count: " << frame_count++ << '\n';
+         
+        // std::cout << "frame count: " << frame_count++ << '\n';
     }
 
     return 0;
