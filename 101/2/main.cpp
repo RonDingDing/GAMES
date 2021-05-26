@@ -132,6 +132,7 @@ int main(int argc, const char** argv)
         return 0;
     }
 
+    int msaa_n = 1;
     while(key != 27)
     {
         
@@ -142,14 +143,32 @@ int main(int argc, const char** argv)
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
-        r.draw(pos_id, ind_id, col_id, rst::Primitive::Triangle);
+        // r.draw(pos_id, ind_id, col_id, rst::Primitive::Triangle);
+        r.draw_msaa(pos_id, ind_id, col_id, rst::Primitive::Triangle, msaa_n);
 
         cv::Mat image(700, 700, CV_32FC3, r.frame_buffer().data());
         image.convertTo(image, CV_8UC3, 1.0f);
         cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
         cv::imshow("image", image);
         key = cv::waitKey(10);
-         
+        if (key == 'w')
+        {
+            msaa_n += 1;
+            std::cout << "MSAA num: " << msaa_n << std::endl;
+        }
+        else if (key == 's')
+        {
+            if (msaa_n > 1)
+            {
+                msaa_n -= 1;
+                std::cout << "MSAA num: " << msaa_n << std::endl;
+            }
+            else 
+            {
+                std::cout << "MSAA num cannot be smaller than 1" << std::endl;
+            }
+        }
+
         // std::cout << "frame count: " << frame_count++ << '\n';
     }
 
