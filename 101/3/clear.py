@@ -18,5 +18,6 @@ if __name__ == '__main__':
     rm('build')
     rm('.vscode')
     rm('.cache')
+    rm('.mypy_cache')
     rm('compile_commands.json')
 
