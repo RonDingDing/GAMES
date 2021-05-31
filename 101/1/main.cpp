@@ -121,8 +121,8 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     // Then return it.
     Eigen::Matrix4f orth, persp_to_orth;
     float half_eye_angle = eye_fov / 2 / 180.0 * MY_PI;
-    float n = -zNear;
-    float f = -zFar;
+    float n = zNear;
+    float f = zFar;
     float t = zNear * tan(half_eye_angle);
     float r = t * aspect_ratio;
     float l = -r;
@@ -133,15 +133,14 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
                      0, 0, n + f, -n * f,
                      0, 0, 1,     0;
 
-    orth << 2 / (r - l), 0,           0,         0,
-            0,           2 / (t - b), 0,         0,
-            0,           0,           2 / (n-f), 0,
-            0,           0,           0,         1;
+    orth << 2 / (l - r), 0,           0,           0,
+            0,           2 / (b - t), 0,           0,
+            0,           0,           2 / (n - f), 0,
+            0,           0,           0,           1;
 
     
     projection = orth * persp_to_orth;
     return projection;
-
 }
 
 int main(int argc, const char** argv)
