@@ -47,6 +47,12 @@ public:
 
         int x_floor = std::floor(u_img);
         int y_floor = std::floor(v_img);
+
+        // u_left = x_floor;
+        // u_right = x_floor + 1;
+        // v_up = y_floor;
+        // v_down = y_floor + 1;
+
         if (u_img - x_floor < 0.5)
         {
             u_left = x_floor - 0.5;
@@ -93,13 +99,11 @@ public:
         Eigen::Vector3f c_10 = Eigen::Vector3f(u10_color[0], u10_color[1], u10_color[2]);
         Eigen::Vector3f c_11 = Eigen::Vector3f(u11_color[0], u11_color[1], u11_color[2]);
 
-
         Eigen::Vector3f color_oo = Eigen::Vector3f(color_o[0], color_o[1], color_o[2]);
         Eigen::Vector3f color_1 = Eigen::Vector3f(color[0], color[1], color[2]);
         // std::cout << "(" << color_oo[0] << ", " << color_oo[1] << ", " << color_oo[2] << ") (" << color_1[0] << ", " << color_1[1] << ", " << color_1[2] << ")" << std::endl;
 
         // std::cout << "(" << color_oo[0] << ", " << color_oo[1] << ", " << color_oo[2] << ") (" << c_00[0] << ", " << c_00[1] << ", " << c_00[2] << ") (" << c_01[0] << ", " << c_01[1] << ", " << c_01[2] << ") (" << c_10[0] << ", " << c_10[1] << ", " << c_10[2] << ") (" << c_11[0] << ", " << c_11[1] << ", " << c_11[2] << ")" <<  std::endl;
-
 
         // std::cout <<  u_left  << ", " <<  u_img  << ", " <<  u_right  << " | " <<   v_up  << ", " <<  v_img  << ", " <<  v_down  << std::endl;
         // std::cout <<  u_left  << ", " <<  u_img  << ", " <<  u_right  << " | " <<   v_up  << ", " <<  v_img  << ", " <<  v_down  << std::endl;
