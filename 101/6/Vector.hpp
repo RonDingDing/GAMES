@@ -47,8 +47,7 @@ public:
 
     static Vector3f Max(const Vector3f &p1, const Vector3f &p2)
     {
-        return Vector3f(std::max(p1.x, p2.x), std::max(p1.y, p2.y),
-                        std::max(p1.z, p2.z));
+        return Vector3f(std::max(p1.x, p2.x), std::max(p1.y, p2.y), std::max(p1.z, p2.z));
     }
 };
 inline double Vector3f::operator[](int index) const
