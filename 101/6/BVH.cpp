@@ -232,11 +232,10 @@ Intersection BVHAccel::Intersect(const Ray &ray) const
 Intersection BVHAccel::getIntersection(BVHBuildNode *node, const Ray &ray) const
 {
     Intersection inter;
-    Vector3f invDir = Vector3f{ray.direction_inv.x, ray.direction_inv.y, ray.direction_inv.z};
     std::array<int, 3> dirIsNeg = {static_cast<int>(ray.direction.x > 0),
                                    static_cast<int>(ray.direction.y > 0),
                                    static_cast<int>(ray.direction.z > 0)};
-    if (!node->bounds.IntersectP(ray, invDir, dirIsNeg))
+    if (!node->bounds.IntersectP(ray, ray.direction_inv, dirIsNeg))
     {
         return inter;
     }

@@ -109,7 +109,7 @@ inline bool Bounds3::IntersectP(const Ray &ray, const Vector3f &invDir,
 
     float t_enter = std::max({std::min({t_x1, t_x2}), std::min({t_y1, t_y2}), std::min({t_z1, t_z2})});
     float t_exit = std::min({std::max({t_x1, t_x2}), std::max({t_y1, t_y2}), std::max({t_z1, t_z2})});
-    
+
     float difference = t_exit - t_enter;
     bool equal = difference < EPSILON && difference > 0;
 
