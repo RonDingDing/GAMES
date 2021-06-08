@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     MeshTriangle right("../models/cornellbox/right.obj", green);
     MeshTriangle light_("../models/cornellbox/light.obj", light);
 
-    Scene scene(1000, 1000);
+    Scene scene(100, 100);
     scene.Add(&floor);
     scene.Add(&shortbox);
     scene.Add(&tallbox);
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     auto start = std::chrono::system_clock::now();
     // r.Render(scene);
     int max_recursion = 17;
-    int spp = 1024;
+    int spp = 10;
     float russian_roulette = 0.8;
     r.Render(scene, spp, max_recursion, russian_roulette);
     auto stop = std::chrono::system_clock::now();
