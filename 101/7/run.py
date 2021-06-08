@@ -20,5 +20,7 @@ if __name__ == '__main__':
     os.chdir('build')
     os.system('cmake -G "MinGW Makefiles" ../')
     os.system('mingw32-make')
+    os.system('Raytracing.exe')
     os.chdir('..')
+    os.system('python convert_to_jpg.py')
 

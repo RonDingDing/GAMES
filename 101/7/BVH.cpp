@@ -2,8 +2,10 @@
 #include <cassert>
 #include "BVH.hpp"
 
-BVHAccel::BVHAccel(std::vector<Object *> p, int maxPrimsInNode, SplitMethod splitMethod)
-    : maxPrimsInNode(std::min(255, maxPrimsInNode)), splitMethod(splitMethod), primitives(std::move(p))
+BVHAccel::BVHAccel(std::vector<Object *> p, int maxPrimsInNode,
+                   SplitMethod splitMethod)
+    : maxPrimsInNode(std::min(255, maxPrimsInNode)), splitMethod(splitMethod),
+      primitives(std::move(p))
 {
     time_t start, stop;
     time(&start);
@@ -54,7 +56,8 @@ BVHBuildNode *BVHAccel::recursiveBuild(std::vector<Object *> objects)
     {
         Bounds3 centroidBounds;
         for (int i = 0; i < objects.size(); ++i)
-            centroidBounds = Union(centroidBounds, objects[i]->getBounds().Centroid());
+            centroidBounds =
+                Union(centroidBounds, objects[i]->getBounds().Centroid());
         int dim = centroidBounds.maxExtent();
         switch (dim)
         {
@@ -105,7 +108,6 @@ Intersection BVHAccel::Intersect(const Ray &ray) const
 
 Intersection BVHAccel::getIntersection(BVHBuildNode *node, const Ray &ray) const
 {
-    // TODO Traverse the BVH to find intersection
     Intersection inter;
     std::array<int, 3> dirIsNeg = {static_cast<int>(ray.direction.x > 0),
                                    static_cast<int>(ray.direction.y > 0),
@@ -114,13 +116,18 @@ Intersection BVHAccel::getIntersection(BVHBuildNode *node, const Ray &ray) const
     {
         return inter;
     }
-    if (node->left == nullptr && node->left == nullptr)
+
+    if (node->left == nullptr && node->right == nullptr)
     {
         return node->object->getIntersection(ray);
     }
+
     Intersection h1 = getIntersection(node->left, ray);
     Intersection h2 = getIntersection(node->right, ray);
+
     return h1.distance < h2.distance ? h1 : h2;
+
+    // TODO Traverse the BVH to find intersection
 }
 
 void BVHAccel::getSample(BVHBuildNode *node, float p, Intersection &pos, float &pdf)
