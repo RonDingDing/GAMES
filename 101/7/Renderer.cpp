@@ -15,12 +15,24 @@ const float EPSILON = 0.01;
 // generate primary rays and cast these rays into the scene. The content of the
 // framebuffer is saved to a file.
 // void Renderer::Render(const Scene& scene)
-void Renderer::RayTask(Data &data)
+std::mutex mutexing;
+
+Vector3f Renderer::RayTask(Data *data)
 {
-    for (int k = 0; k < data.spp; k++)
+    auto async_run = AsyncFunction([](Data *data)
+                                   { return data->scene->castRay(Ray(data->eye_pos, data->dir), 0, data->max_recursion, data->russian_roulette) / data->spp; });
+    std::vector<std::shared_future<Vector3f>> store;
+    Vector3f result(0);
+    for (int k = 0; k < data->spp; k++)
     {
-        data.framebuffer[data.m] += data.scene->castRay(Ray(data.eye_pos, data.dir), 0, data.max_recursion, data.russian_roulette) / data.spp;
+        store.push_back(async_run(data));
     }
+
+    for (int k = 0; k < data->spp; k++)
+    {
+        result += store[k].get();
+    }
+    return result;
 }
 
 void Renderer::Render(const Scene &scene, int spp, int max_recursion, float russian_roulette)
@@ -47,12 +59,19 @@ void Renderer::Render(const Scene &scene, int spp, int max_recursion, float russ
 
             Vector3f dir = normalize(Vector3f(-x, y, 1));
 
-            Data data((Scene *)(&scene), framebuffer, eye_pos, dir, max_recursion, russian_roulette, spp, m);
+            Data data = Data((Scene *)(&scene), eye_pos, dir, max_recursion, russian_roulette, spp);
+            Vector3f result(0);
             // for (int k = 0; k < spp; k++)
             // {
             //     framebuffer[m] += scene.castRay(Ray(eye_pos, dir), 0, max_recursion, russian_roulette) / spp;
             // }
-            RayTask(data);
+            // for (int k = 0; k < spp; k++)
+            // {
+            //     result += scene.castRay(Ray(eye_pos, dir), 0, max_recursion, russian_roulette) / spp;
+            // }
+            // framebuffer[m] += result;
+            framebuffer[m] += RayTask(&data);
+
             m++;
         }
         UpdateProgress(j / (float)scene.height);

@@ -2,12 +2,14 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <time.h>
 
 #undef M_PI
 #define M_PI 3.141592653589793f
 
 extern const float EPSILON;
 const float kInfinity = std::numeric_limits<float>::max();
+
 
 inline float clamp(const float &lo, const float &hi, const float &v)
 {
@@ -39,7 +41,7 @@ inline float get_random_float()
     // std::uniform_real_distribution<float> dist(0.f, 1.f); // distribution in range [1, 6]
 
     // return dist(rng);
-    float r = ((double) rand() / (RAND_MAX));
+    float r = ((double)rand() / (RAND_MAX));
     return r;
 }
 

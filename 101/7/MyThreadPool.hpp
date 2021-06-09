@@ -1,45 +1,27 @@
 #pragma once
-
-#include <iostream>
 #include <functional>
 #include <future>
-#include <mutex>
-#include <thread>
-#include <chrono>
-#include <queue>
-#include <map>
-#include <atomic>
+#include <iostream>
 
-template <typename ReturnType, typename FunctionType, typename... ArgsType>
-class MyThreadPool
+template <typename FunctionType>
+class AsyncFunctor
 {
+    FunctionType func;
+
 public:
-    MyThreadPool()
-    {
-        std::mutex mutexing;
-        std::map<int, ReturnType> mapping{};
-    };
+    AsyncFunctor(FunctionType &&func) : func(func) {}
 
-    void add_task(int id, FunctionType func, ArgsType... params)
+    template <typename... ArgsTypes>
+    std::future<typename std::result_of<FunctionType(ArgsTypes...)>::type>
+    operator()(ArgsTypes &&...args) const
     {
-        std::unique_lock<std::mutex> lock(mutexing);
-        mapping[id] = std::async(std::launch::deferred, func, params...);
-    };
-
-    ReturnType get(int id)
-    {
-        std::unique_lock<std::mutex> lock(mutexing);
-        auto iter = mapping.find(id);
-        if (iter != mapping.end())
-        {
-            auto result = iter->second.get();
-            return result;
-        }
-
-        throw std::out_of_range("Not in dict");
+        return std::async(std::launch::deferred, func, args...);
     }
-
-private:
-    std::mutex mutexing;
-    std::map<int, std::future<ReturnType>> mapping;
 };
+
+template <typename FunctionType> // helper function to handle template parameters
+AsyncFunctor<FunctionType> AsyncFunction(FunctionType &&func)
+{
+    return AsyncFunctor<FunctionType>(std::move(func));
+}
+

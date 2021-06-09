@@ -32,13 +32,14 @@ int main(int argc, char **argv)
     MeshTriangle right("../models/cornellbox/right.obj", green);
     MeshTriangle light_("../models/cornellbox/light.obj", light);
 
-    Scene scene(100, 100);
+    Scene scene(300, 300);
     scene.Add(&floor);
     scene.Add(&shortbox);
     scene.Add(&tallbox);
     scene.Add(&left);
     scene.Add(&right);
     scene.Add(&light_);
+ 
 
     scene.buildBVH();
 
