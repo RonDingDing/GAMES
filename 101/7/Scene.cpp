@@ -3,7 +3,6 @@
 //
 
 #include "Scene.hpp"
-
 void Scene::buildBVH()
 {
     printf(" - Generating BVH...\n\n");

@@ -4,7 +4,9 @@
 #include "Sphere.hpp"
 #include "Vector.hpp"
 #include "global.hpp"
+#include "RandomFloat.hpp"
 #include <chrono>
+
 
 // In the main function of the program, we create the scene (create objects and
 // lights) as well as set the options for the render (image width and height,
@@ -32,14 +34,13 @@ int main(int argc, char **argv)
     MeshTriangle right("../models/cornellbox/right.obj", green);
     MeshTriangle light_("../models/cornellbox/light.obj", light);
 
-    Scene scene(300, 300);
+    Scene scene(100, 100);
     scene.Add(&floor);
     scene.Add(&shortbox);
     scene.Add(&tallbox);
     scene.Add(&left);
     scene.Add(&right);
     scene.Add(&light_);
- 
 
     scene.buildBVH();
 

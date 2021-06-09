@@ -9,7 +9,6 @@
 #include "Vector.hpp"
 #include "Bounds3.hpp"
 #include "Material.hpp"
-
 class Sphere : public Object
 {
 public:
@@ -17,6 +16,7 @@ public:
     float radius, radius2;
     Material *m;
     float area;
+
     Sphere(const Vector3f &c, const float &r, Material *mt = new Material()) : center(c), radius(r), radius2(r * r), m(mt), area(4 * M_PI * r * r) {}
     bool intersect(const Ray &ray)
     {

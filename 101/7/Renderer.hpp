@@ -20,6 +20,9 @@ public:
     Renderer() { srand((unsigned)time(NULL)); };
     void Render(const Scene &scene, int spp = 16, int max_recursion = 10, float russian_roulette = 0.8f);
     Vector3f RayTask(Data *data);
+    Vector3f RayTaskAsync(Data *data);
+    Vector3f RayTaskDefer(Data *data);
+    Vector3f RayTaskPool(Data *data);
 
 private:
 };

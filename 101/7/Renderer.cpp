@@ -6,21 +6,20 @@
 #include "Renderer.hpp"
 #include "Data.hpp"
 #include "MyThreadPool.hpp"
+#include "MyThreadPool2.hpp"
 
 inline float deg2rad(const float &deg) { return deg * M_PI / 180.0; }
 
 const float EPSILON = 0.01;
 
-// The main render function. This where we iterate over all pixels in the image,
-// generate primary rays and cast these rays into the scene. The content of the
-// framebuffer is saved to a file.
-// void Renderer::Render(const Scene& scene)
 std::mutex mutexing;
 
-Vector3f Renderer::RayTask(Data *data)
+Vector3f Renderer::RayTaskDefer(Data *data)
 {
-    auto async_run = AsyncFunction([](Data *data)
+    auto async_run = DeferFunction([](Data *data)
                                    { return data->scene->castRay(Ray(data->eye_pos, data->dir), 0, data->max_recursion, data->russian_roulette) / data->spp; });
+
+    ThreadPool pool;
     std::vector<std::shared_future<Vector3f>> store;
     Vector3f result(0);
     for (int k = 0; k < data->spp; k++)
@@ -35,6 +34,63 @@ Vector3f Renderer::RayTask(Data *data)
     return result;
 }
 
+Vector3f Renderer::RayTaskAsync(Data *data)
+{
+    auto async_run = AsyncFunction([](Data *data)
+                                   { return data->scene->castRay(Ray(data->eye_pos, data->dir), 0, data->max_recursion, data->russian_roulette) / data->spp; });
+    ThreadPool pool;
+    std::vector<std::shared_future<Vector3f>> store;
+    Vector3f result(0);
+    for (int k = 0; k < data->spp; k++)
+    {
+        store.push_back(async_run(data));
+    }
+
+    for (int k = 0; k < data->spp; k++)
+    {
+        result += store[k].get();
+    }
+    return result;
+}
+
+Vector3f Renderer::RayTaskPool(Data *data)
+{
+    auto async_run = [](Data *data)
+    { return data->scene->castRay(Ray(data->eye_pos, data->dir), 0, data->max_recursion, data->russian_roulette) / data->spp; };
+
+    ThreadPool pool;
+    std::vector<std::shared_future<Vector3f>> store;
+    Vector3f result(0);
+
+    for (int k = 0; k < data->spp; k++)
+    {
+        store.push_back(pool.submit(async_run, data));
+    }
+
+    for (int k = 0; k < data->spp; k++)
+    {
+        result += store[k].get();
+    }
+    return result;
+}
+
+Vector3f Renderer::RayTask(Data *data)
+{
+    Vector3f result(0);
+    auto async_run = [](Data *data)
+    { return data->scene->castRay(Ray(data->eye_pos, data->dir), 0, data->max_recursion, data->russian_roulette) / data->spp; };
+
+    for (int k = 0; k < data->spp; k++)
+    {
+        result += async_run(data);
+    }
+    return result;
+}
+
+// The main render function. This where we iterate over all pixels in the image,
+// generate primary rays and cast these rays into the scene. The content of the
+// framebuffer is saved to a file.
+// void Renderer::Render(const Scene& scene)
 void Renderer::Render(const Scene &scene, int spp, int max_recursion, float russian_roulette)
 {
     std::vector<Vector3f> framebuffer(scene.width * scene.height);
@@ -61,16 +117,10 @@ void Renderer::Render(const Scene &scene, int spp, int max_recursion, float russ
 
             Data data = Data((Scene *)(&scene), eye_pos, dir, max_recursion, russian_roulette, spp);
             Vector3f result(0);
-            // for (int k = 0; k < spp; k++)
-            // {
-            //     framebuffer[m] += scene.castRay(Ray(eye_pos, dir), 0, max_recursion, russian_roulette) / spp;
-            // }
-            // for (int k = 0; k < spp; k++)
-            // {
-            //     result += scene.castRay(Ray(eye_pos, dir), 0, max_recursion, russian_roulette) / spp;
-            // }
-            // framebuffer[m] += result;
             framebuffer[m] += RayTask(&data);
+            // framebuffer[m] += RayTaskPool(&data);
+            // framebuffer[m] += RayTaskAsync(&data);
+            // framebuffer[m] += RayTaskDefer(&data);
 
             m++;
         }
