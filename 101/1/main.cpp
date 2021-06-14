@@ -23,7 +23,7 @@ Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
 
 Eigen::Matrix4f get_model_matrix(float rotation_angle)
 {
-    Eigen::Matrix4f model;
+    // Eigen::Matrix4f model;
 
     // TODO: Implement this function
     // Create the model matrix for rotating the triangle around the Z axis.
@@ -34,8 +34,7 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
                   sin(alpha), cos(alpha),  0, 0,
                   0,          0,           1, 0,
                   0,          0,           0, 1;
-    model = rotation_z;
-    return model;
+    return rotation_z;
 }
 
 Eigen::Matrix4f get_rotation_matrix(Vector3f axis, float angle)
@@ -44,11 +43,11 @@ Eigen::Matrix4f get_rotation_matrix(Vector3f axis, float angle)
     Eigen::Matrix3f N, R;                            //R是罗德里格斯矩阵
     Eigen::Matrix3f I = Eigen::Matrix3f::Identity(); //I是单位矩阵
     Eigen::Vector3f norm = axis.normalized();
-    float x = norm[0];
-    float y = norm[1];
-    float z = norm[2];
+    float x = norm.x();
+    float y = norm.y();
+    float z = norm.z();
     
-    double rotate = angle / 180.0f * M_PI;
+    double alpha = angle / 180.0f * M_PI;
     N << 0, -z, y,
          z, 0,  -x,
         -y, x,  0;
@@ -58,7 +57,7 @@ Eigen::Matrix4f get_rotation_matrix(Vector3f axis, float angle)
     } 
     else 
     {
-        R = cos(rotate) * I + (1 - cos(rotate)) * norm * norm.transpose() + sin(rotate) * N;
+        R = cos(alpha) * I + (1 - cos(alpha)) * norm * norm.transpose() + sin(alpha) * N;
     }
    
     rotation << R(0, 0), R(0, 1), R(0, 2), 0,
@@ -67,47 +66,6 @@ Eigen::Matrix4f get_rotation_matrix(Vector3f axis, float angle)
                 0,       0,       0,       1;
     return rotation;
 }
-
-
-
-Eigen::Matrix4f get_rotation_matrix_x_y_z(Eigen::Vector3f axis, float angle)
-{
-    Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
-    Eigen::Matrix4f rotate;
-    float alpha = angle / 180.0f * M_PI;
-    //绕X轴
-    Eigen::Vector3f norm = axis.normalized();
-    if (norm[0] != 0)
-    {
-        rotate << 1, 0,             0,           0,
-                  0, cos(alpha),    -sin(alpha), 0,
-                  0, sin(alpha),    cos(alpha),  0,
-                  0, 0,             0,           1;
-        model = model * rotate;
-    }
-    //绕Y轴
-    if (norm[1] != 0)
-    {
-        rotate << cos(alpha),  0, sin(alpha), 0,
-                  0,           1, 0,          0,
-                  -sin(alpha), 0, cos(alpha), 0,
-                  0,           0, 0,          1;
-
-        model = model * rotate;
-    }
-    //绕Z轴
-    if (norm[2] != 0)
-    {
-        rotate << cos(alpha), -sin(alpha), 0, 0,
-                  sin(alpha), cos(alpha),  0, 0,
-                  0,          0,           1, 0,
-                  0,          0,           0, 1;
-        model = model * rotate;
-    }
-    return model;
-}
- 
-
 
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
                                       float zNear, float zFar)
@@ -191,7 +149,6 @@ int main(int argc, const char** argv)
         // r.set_model(get_model_matrix(angle)); // 基础题
         Eigen::Vector3f forv(x, y, z); // 提高题（1.罗德里格公式解法、2.欧拉角解法）
         r.set_model(get_rotation_matrix(forv, angle)); // 提高题（1.罗德里格公式解法）
-        // r.set_model(get_rotation_matrix_x_y_z(forv, angle)); // 提高题（2.欧拉角解法）
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
@@ -202,12 +159,12 @@ int main(int argc, const char** argv)
         cv::imshow("image", image);
         key = cv::waitKey(10);
         Eigen::Vector3f norm = forv.normalized().transpose();
-        if (key == 'r') {
-            angle += 1;
+        if (key == 'a') {
+            angle += 10;
             std::cout << "x, y, z, angle: " << x << ", " << y << ", " << z << ", " << angle << std::endl;
         }
-        else if (key == 'f') {
-            angle -= 1;
+        else if (key == 'd') {
+            angle -= 10;
             std::cout << "x, y, z, angle: " << x << ", " << y << ", " << z << ", " << angle << std::endl;
         } 
         else if (key == 'q') {
@@ -218,11 +175,11 @@ int main(int argc, const char** argv)
             z -= 1;
             std::cout << "x, y, z, angle: " << x << ", " << y << ", " << z << ", " << angle << std::endl;
         }
-        else if (key == 'a') {
+        else if (key == 'r') {
             y += 1;
             std::cout << "x, y, z, angle: " << x << ", " << y << ", " << z << ", " << angle << std::endl;
         }
-        else if (key == 'd') {
+        else if (key == 'f') {
             y -= 1;
             std::cout << "x, y, z, angle: " << x << ", " << y << ", " << z << ", " << angle << std::endl;
         } 
