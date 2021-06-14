@@ -18,7 +18,7 @@ if __name__ == '__main__':
     rm('build')
     mkdir('build')
     os.chdir('build')
-    os.system('cmake -G "MinGW Makefiles" ../')
-    os.system('mingw32-make')
+    os.system('cmake ../')
+    os.system('make')
     os.chdir('..')
 
