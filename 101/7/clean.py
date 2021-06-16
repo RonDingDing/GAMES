@@ -15,8 +15,8 @@ def mkdir(path: str) -> None:
 
 
 if __name__ == '__main__':
-    rm('build')
-    rm('.vscode')
+    rm('__build__')
+    rm('__build__')
     rm('.cache')
     rm('.mypy_cache')
     rm('compile_commands.json')

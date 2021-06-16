@@ -11,7 +11,7 @@ services:
     working_dir: /src/
     command: /bin/sh -c "sleep 1d"
     volumes:
-      - ../:/src/      
+      - ./:/src/      
     ports:
         - 50022:22
     # deploy:

@@ -15,6 +15,6 @@ def mkdir(path: str) -> None:
 
 
 if __name__ == '__main__':
-    rm('build')
+    rm('__build__')
     rm('.vscode')
 

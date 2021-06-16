@@ -48,5 +48,12 @@ RUN sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/rep
 RUN sudo apt-get -y install code
 RUN sudo echo "export DISPLAY=192.168.2.190:0.0" >> /root/.bashrc
 
-# 然后 passwd设置密码
 RUN ssh-keygen -t rsa -C "ronweasleyding@163.com" -f "/root/.ssh/id_rsa" -N ""
+RUN sudo echo "alias python=\"python3\"" >> /root/.bashrc
+RUN alias python=\"python3\"
+RUN sudo apt-get -y install python3-pip
+RUN sudo python3 -m pip install pillow
+
+
+
+# 然后 passwd设置密码

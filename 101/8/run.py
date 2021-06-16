@@ -15,9 +15,9 @@ def mkdir(path: str) -> None:
 
 
 if __name__ == '__main__':
-    rm('build')
-    mkdir('build')
-    os.chdir('build')
+    rm('__build__')
+    mkdir('__build__')
+    os.chdir('__build__')
     os.system('cmake ../')
     os.system('make')
 

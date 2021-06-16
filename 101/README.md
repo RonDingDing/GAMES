@@ -191,9 +191,9 @@ def mkdir(path: str) -> None:
 
 
 if __name__ == '__main__':
-    rm('build')
-    mkdir('build')
-    os.chdir('build')
+    rm('__build__')
+    mkdir('__build__')
+    os.chdir('__build__')
     os.system('cmake ../')
     os.system('make')
     #os.system('./Rasterize')              # (1.)作业 1 2 3 4 5 
@@ -230,7 +230,7 @@ def mkdir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
 
 if __name__ == '__main__':
-    rm('build')
+    rm('__build__')
     rm('.vscode')
     rm('.cache')
     rm('.mypy_cache')
@@ -245,8 +245,8 @@ if __name__ == '__main__':
 ```python
 from PIL import Image
 
-img = Image.open("./build/binary.ppm")
-img.save("./build/binary.jpg")
+img = Image.open("./__build__/binary.ppm")
+img.save("./__build__/binary.jpg")
 img.show()
 ```
 
