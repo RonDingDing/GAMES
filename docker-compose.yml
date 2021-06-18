@@ -13,7 +13,7 @@ services:
     volumes:
       - ./:/src/      
     ports:
-        - 50022:22
+        - "50022:22"
     # deploy:
     #   resources:
     #     limits:

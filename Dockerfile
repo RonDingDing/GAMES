@@ -53,6 +53,7 @@ RUN sudo echo "alias python=\"python3\"" >> /root/.bashrc
 RUN alias python=\"python3\"
 RUN sudo apt-get -y install python3-pip
 RUN sudo python3 -m pip install pillow
+RUN sudo apt-get install gdb
 
 
 

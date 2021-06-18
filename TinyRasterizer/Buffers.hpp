@@ -2,6 +2,7 @@
 #include <vector>
 #include <stdexcept>
 #include "VectorN.hpp"
+#include "Mesh.hpp"
 
 namespace Rasterizer
 {
@@ -20,7 +21,7 @@ namespace Rasterizer
 
         void set_pixel_color(const int &xx, const int &yy, const Vector3D &color)
         {
-            if (xx > width - 1 || xx < 0 || yy > height - 1 || yy < 0)
+            if (xx > width || xx < 0 || yy > height || yy < 0)
             {
                 throw std::out_of_range("Out of buffer range!");
             }
@@ -30,18 +31,17 @@ namespace Rasterizer
 
         const Vector3D &get_pixel_color(const int &xx, const int &yy)
         {
-            if (xx > width - 1 || xx < 0 || yy > height - 1 || yy < 0)
+            if (xx > width || xx < 0 || yy > height || yy < 0)
             {
                 throw std::out_of_range("Out of buffer range!");
             }
-
             // return pixel[width * yy + xx];
             return pixel[(height - yy) * width + xx];
         }
 
         void set_depth_value(const int &xx, const int &yy, const double &dep)
         {
-            if (xx > width - 1 || xx < 0 || yy > height - 1 || yy < 0)
+            if (xx > width || xx < 0 || yy > height || yy < 0)
             {
                 throw std::out_of_range("Out of buffer range!");
             }
@@ -51,7 +51,7 @@ namespace Rasterizer
 
         const double &get_depth_value(const int &xx, const int &yy)
         {
-            if (xx > width - 1 || xx < 0 || yy > height - 1 || yy < 0)
+            if (xx > width || xx < 0 || yy > height || yy < 0)
             {
                 throw std::out_of_range("Out of buffer range!");
             }
@@ -141,6 +141,24 @@ namespace Rasterizer
                 {
                     y += (y1 > y0 ? 1 : -1);
                     error2 -= dx * 2;
+                }
+            }
+        }
+
+        void set_mesh(Mesh &mesh, const Vector3D &color)
+        {
+            for (int i = 0; i < mesh.face_num(); i++)
+            {
+                std::vector<int> face = mesh.faces[i];
+                for (int j = 0; j < 3; j++)
+                {
+                    Vector3D v0 = mesh.vertices[face[j]];
+                    Vector3D v1 = mesh.vertices[face[(j + 1) % 3]];
+                    int x0 = (v0.x + 1.) * width / 2.;
+                    int y0 = (v0.y + 1.) * height / 2.;
+                    int x1 = (v1.x + 1.) * width / 2.;
+                    int y1 = (v1.y + 1.) * height / 2.;
+                    draw_line(Vector2D(x0, y0), Vector2D(x1, y1), color);
                 }
             }
         }

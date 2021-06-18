@@ -35,5 +35,10 @@ int main(int argc, char **argv)
     // con.draw_ppm_to("output");
     // print_color({255, 255, 255});
     ObjectLoader loader;
-    loader.load("bunny.obj");
+    Mesh mesh = loader.load("head.obj");
+    Buffers buf = Buffers(1000, 1000);
+    buf.set_mesh(mesh, Vector3D(255, 255, 255));
+    std::cout << buf.pixel.size() << std::endl;
+    PicConvert con = PicConvert(buf);
+    con.draw_ppm_to("output");
 }

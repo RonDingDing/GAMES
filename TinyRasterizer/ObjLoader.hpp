@@ -2,8 +2,10 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include "VectorN.hpp"
+#include "Mesh.hpp"
 
 namespace Rasterizer
 {
@@ -13,74 +15,96 @@ namespace Rasterizer
         std::vector<Vector3D> vertices;
         std::vector<std::vector<int>> faces;
 
-        void load(const char *filename)
+        Mesh load(const char *filename)
         {
             std::ifstream obj_file(filename);
             if (!obj_file.is_open())
             {
                 std::cout << "Cannot open this file: " << filename << std::endl;
-                return;
+                return Mesh( );
             }
-
             std::string line;
-            while (getline(obj_file, line))
+            while (!obj_file.eof())
             {
-                std::vector<std::string> list = strip_and_split(line);
-                if (list[0] == std::string("v"))
+                std::getline(obj_file, line);
+                std::istringstream line_stream(line.c_str());
+
+                if (!line.compare(0, 2, "v "))
                 {
-                    load_vertices(list);
+                    load_vertices(line_stream);
                 }
-                else
-                    std::cout << list[0];
+                else if (!line.compare(0, 2, "f "))
+                {
+                    load_faces(line_stream);
+                }
             }
+            std::cout << "# v# " << vertices.size() << " f# " << faces.size() << std::endl;
+            return Mesh(vertices, faces);
         }
 
     private:
-        void load_vertices(const std::vector<std::string> &list)
+        void load_faces(std::istringstream &line_stream)
         {
-            if (list.size() != 4 && list.size() != 5)
+
+            std::vector<int> f;
+            int idx;
+            char ctrash = 0;
+            std::string subline1, subline2, subline3;
+            line_stream >> ctrash >> subline1 >> subline2 >> subline3;
+            if (subline1.find_first_of('/') == std::string::npos) // P
             {
-                throw std::out_of_range("Load vertices error.");
+                f.push_back(std::stoi(subline1) - 1);
+                f.push_back(std::stoi(subline2) - 1);
+                f.push_back(std::stoi(subline3) - 1);
+                faces.push_back(f);
             }
-            int num = 0;
-            Vector3D vec;
-            for (auto string_piece : list)
+            else if (subline1.find("//") != std::string::npos)
             {
-                if (string_piece != "v")
-                {
-                    switch (num)
-                    {
-                    case 0:
-                        vec.x = std::stod(string_piece);
-                        num++;
-                        break;
-                    case 1:
-                        vec.y = std::stod(string_piece);
-                        num++;
-                        break;
-                    case 2:
-                        vec.z = std::stod(string_piece);
-                        num++;
-                        break;
-                    }
-                }
+                std::istringstream sub1(subline1.c_str());
+                std::istringstream sub2(subline2.c_str());
+                std::istringstream sub3(subline3.c_str());
+
+                char c2trash = 0;
+                int i2trash = 0;
+
+                sub1 >> idx >> ctrash >> c2trash >> i2trash;
+                f.push_back(idx - 1);
+                sub2 >> idx >> ctrash >> c2trash >> i2trash;
+                f.push_back(idx - 1);
+                sub3 >> idx >> ctrash >> c2trash >> i2trash;
+                f.push_back(idx - 1);
+
+                faces.push_back(f);
             }
-            vertices.push_back(vec);
+            else // P/T/N or P/T
+            {
+                std::istringstream sub1(subline1.c_str());
+                std::istringstream sub2(subline2.c_str());
+                std::istringstream sub3(subline3.c_str());
+
+                char c2trash = 0;
+                int i2trash = 0;
+                int itrash = 0;
+
+                sub1 >> idx >> ctrash >> itrash >> c2trash >> i2trash;
+                f.push_back(idx - 1);
+                sub2 >> idx >> ctrash >> itrash >> c2trash >> i2trash;
+                f.push_back(idx - 1);
+                sub3 >> idx >> ctrash >> itrash >> c2trash >> i2trash;
+                f.push_back(idx - 1);
+
+                faces.push_back(f);
+            }
         }
 
-        std::vector<std::string> strip_and_split(std::string &str)
+        void load_vertices(std::istringstream &line_stream)
         {
-            std::vector<std::string> list;
-            size_t s = 0;
-            for (size_t i = 0; i < str.size(); i++)
-            {
-                if (str[i] == '\t' || str[i] == ' ' || i == str.size() - 1)
-                {
-                    list.push_back(str.substr(s, i - s));
-                    s = i + 1;
-                }
-            }
-            return list;
+
+            char ctrash = 0;
+            line_stream >> ctrash;
+            Vector3D v;
+            line_stream >> v.x >> v.y >> v.z;
+            vertices.push_back(v);
         }
     };
 }

@@ -20,7 +20,7 @@ if __name__ == '__main__':
     os.chdir('__build__')
     os.system('cmake ../')
     os.system('make')
-    os.system('cp bunny.obj __build__')
+    os.system('cp ../obj/head.obj .')
     os.system('./TinyRasterizer')
     os.chdir('..')
     os.system('python3 convert_to_jpg.py')
