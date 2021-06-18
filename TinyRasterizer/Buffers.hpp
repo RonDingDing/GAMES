@@ -1,15 +1,18 @@
 #pragma once
 #include <vector>
+#include <random>
 #include <stdexcept>
 #include "VectorN.hpp"
+#include "Triangle.hpp"
 #include "Mesh.hpp"
 
 namespace Rasterizer
 {
+    using Num = double;
     class Buffers
     {
     public:
-        std::vector<double> depth;
+        std::vector<Num> depth;
         std::vector<Vector3D> pixel;
         int width = 0;
         int height = 0;
@@ -29,7 +32,7 @@ namespace Rasterizer
             pixel[(height - yy) * width + xx] = color;
         }
 
-        const Vector3D &get_pixel_color(const int &xx, const int &yy)
+        Vector3D &get_pixel_color(const int &xx, const int &yy)
         {
             if (xx > width || xx < 0 || yy > height || yy < 0)
             {
@@ -39,7 +42,7 @@ namespace Rasterizer
             return pixel[(height - yy) * width + xx];
         }
 
-        void set_depth_value(const int &xx, const int &yy, const double &dep)
+        void set_depth_value(const int &xx, const int &yy, const Num &dep)
         {
             if (xx > width || xx < 0 || yy > height || yy < 0)
             {
@@ -49,7 +52,7 @@ namespace Rasterizer
             depth[(height - yy) * width + xx] = dep;
         }
 
-        const double &get_depth_value(const int &xx, const int &yy)
+        Num &get_depth_value(const int &xx, const int &yy)
         {
             if (xx > width || xx < 0 || yy > height || yy < 0)
             {
@@ -104,7 +107,7 @@ namespace Rasterizer
             }
         }
 
-        void draw_line(const Vector2D &p1, const Vector2D &p2, const Vector3D &color)
+        void draw_line(const Vector2I &p1, const Vector2I &p2, const Vector3D &color)
         {
             int x0 = p1.x, x1 = p2.x, y0 = p1.y, y1 = p2.y;
             bool steep = false;
@@ -145,8 +148,56 @@ namespace Rasterizer
             }
         }
 
-        void set_mesh(Mesh &mesh, const Vector3D &color)
+        void draw_triangle_frame(const Triangle2I &tri, const Vector3D &color)
         {
+            // 只画线框三角形
+            draw_triangle_frame({tri.a.x, tri.a.y}, {tri.b.x, tri.b.y}, {tri.c.x, tri.c.y}, color);
+        }
+
+        void draw_triangle_frame(const Vector2I &a, const Vector2I &b, const Vector2I &c, const Vector3D &color)
+        {
+            // 只画线框三角形
+            draw_line(a, b, color);
+            draw_line(b, c, color);
+            draw_line(c, a, color);
+        }
+
+        void draw_triangle_filled(const Vector2I &a, const Vector2I &b, const Vector2I &c, const Vector3D &color)
+        {
+            return draw_triangle_filled(Triangle2I(a, b, c), color);
+        }
+
+        void draw_triangle_filled(const Triangle2I &tri, const Vector3D &color)
+        {
+            // 画一个涂满颜色的三角形
+            // 包围盒
+            Vector2I max_vec = tri.maximum();
+            Vector2I min_vec = tri.minimum();
+            int x_max = std::min({max_vec.x, height - 1});
+            int y_max = std::min({max_vec.y, height - 1});
+            int x_min = std::max({min_vec.x, 0});
+            int y_min = std::max({min_vec.y, 0});
+
+            // 遍历包围盒
+            Vector2I p;
+            for (p.x = x_min; p.x <= x_max; p.x++)
+            {
+                for (p.y = y_min; p.y <= y_max; p.y++)
+                {
+                    Vector3I bc_screen = tri.barycentric(p);
+                    // 重心在三角形外不渲染
+                    if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+                    {
+                        continue;
+                    }
+                    set_pixel_color(p.x, p.y, color);
+                }
+            }
+        }
+
+        void set_mesh_frame(Mesh &mesh, const Vector3D &color)
+        {
+            // 只用指定颜色画线框
             for (int i = 0; i < mesh.face_num(); i++)
             {
                 std::vector<int> face = mesh.faces[i];
@@ -158,7 +209,51 @@ namespace Rasterizer
                     int y0 = (v0.y + 1.) * height / 2.;
                     int x1 = (v1.x + 1.) * width / 2.;
                     int y1 = (v1.y + 1.) * height / 2.;
-                    draw_line(Vector2D(x0, y0), Vector2D(x1, y1), color);
+                    draw_line(Vector2I(x0, y0), Vector2I(x1, y1), color);
+                }
+            }
+        }
+        void set_mesh_filled(Mesh &mesh)
+        {
+            // 将模型的每个面都涂上随机颜色
+            for (int i = 0; i < mesh.face_num(); i++)
+            {
+                std::vector<int> face = mesh.faces[i];
+                Vector2I screen_coords[3];
+                for (int j = 0; j < 3; j++)
+                {
+                    Vector3D world_coords = mesh.vertices[face[j]];
+                    screen_coords[j] = Vector2I((world_coords.x + 1.) * width / 2., (world_coords.y + 1.) * height / 2.);
+                }
+                Triangle2I tri(screen_coords[0], screen_coords[1], screen_coords[2]);
+                Vector3D color(rand() % 255, rand() % 255, rand() % 255);
+                draw_triangle_filled(tri, color);
+            }
+        }
+
+        void set_mesh_gray(Mesh &mesh, const Vector3D &light)
+        {
+            // 假装有一束光照亮他
+            Vector3D light_dir = light.normalized();
+            for (int i = 0; i < mesh.face_num(); i++)
+            {
+                std::vector<int> face = mesh.faces[i];
+                Vector2I screen_coords[3];
+                Vector3D world_coords[3];
+                for (int j = 0; j < 3; j++)
+                {
+                    Vector3D v = mesh.vertices[face[j]];
+                    screen_coords[j] = Vector2I((v.x + 1.) * width / 2., (v.y + 1.) * height / 2.);
+                    world_coords[j] = v;
+                }
+                Vector3D normal = Triangle3D(world_coords[0], world_coords[1], world_coords[2]).normal.normalized();
+                Triangle2I tri(screen_coords[0], screen_coords[1], screen_coords[2]);
+                double intensity = normal * light_dir;
+                if (intensity > 0)
+                {
+                    // 默认光照是白色
+                    Vector3D color(intensity * 255, intensity * 255, intensity * 255);
+                    draw_triangle_filled(tri, color);
                 }
             }
         }
