@@ -2,18 +2,21 @@
 #include <vector>
 #include <random>
 #include <stdexcept>
+#include <limits>
 #include "VectorN.hpp"
 #include "Triangle.hpp"
 #include "Mesh.hpp"
+#include <stdio.h>
 
 namespace Rasterizer
 {
-    using Num = double;
+    using Number = double;
     class Buffers
     {
     public:
-        std::vector<Num> depth;
+        std::vector<Number> depth;
         std::vector<Vector3D> pixel;
+        std::vector<Vector3D> texture;
         int width = 0;
         int height = 0;
 
@@ -22,7 +25,7 @@ namespace Rasterizer
             resize(xx, yy);
         }
 
-        void set_pixel_color(const int &xx, const int &yy, const Vector3D &color)
+        void set_pixel_color(const int &xx, const int &yy, Vector3D color)
         {
             if (xx > width || xx < 0 || yy > height || yy < 0)
             {
@@ -42,7 +45,7 @@ namespace Rasterizer
             return pixel[(height - yy) * width + xx];
         }
 
-        void set_depth_value(const int &xx, const int &yy, const Num &dep)
+        void set_depth_value(const int &xx, const int &yy, const Number &dep)
         {
             if (xx > width || xx < 0 || yy > height || yy < 0)
             {
@@ -52,7 +55,7 @@ namespace Rasterizer
             depth[(height - yy) * width + xx] = dep;
         }
 
-        Num &get_depth_value(const int &xx, const int &yy)
+        Number &get_depth_value(const int &xx, const int &yy)
         {
             if (xx > width || xx < 0 || yy > height || yy < 0)
             {
@@ -62,15 +65,38 @@ namespace Rasterizer
             return depth[(height - yy) * width + xx];
         }
 
+        void set_texture(const int &xx, const int &yy, const Vector3D &tex)
+        {
+            if (xx > width || xx < 0 || yy > height || yy < 0)
+            {
+                throw std::out_of_range("Out of buffer range!");
+            }
+            // return texture[width * yy + xx];
+            texture[(height - yy) * width + xx] = tex;
+        }
+
+        Vector3D &get_texture(const int &xx, const int &yy)
+        {
+            if (xx > width || xx < 0 || yy > height || yy < 0)
+            {
+                throw std::out_of_range("Out of buffer range!");
+            }
+            // return depth[width * yy + xx];
+            return texture[(height - yy) * width + xx];
+        }
+
         void resize(const int &xx, const int &yy)
         {
-            width = std::max(std::max(xx, 1), std::max(yy, 1));
+            width = (std::max(xx, 1), std::max(yy, 1));
             height = std::min(std::max(xx, 1), std::max(yy, 1));
             depth.resize(width * height);
             clear_depth();
 
             pixel.resize(width * height);
             clear_pixel();
+
+            texture.resize(width * height);
+            clear_texture();
         }
 
         void clear_pixel()
@@ -80,7 +106,12 @@ namespace Rasterizer
 
         void clear_depth()
         {
-            std::fill(depth.begin(), depth.end(), 0);
+            std::fill(depth.begin(), depth.end(), std::numeric_limits<Number>::min());
+        }
+
+        void clear_texture()
+        {
+            std::fill(texture.begin(), texture.end(), Vector3D(0));
         }
 
         void print_pixel()
@@ -102,6 +133,18 @@ namespace Rasterizer
                 for (int i = 0; i < width; i++)
                 {
                     std::cout << get_depth_value(i, j) << " ";
+                }
+                std::cout << std::endl;
+            }
+        }
+
+        void print_texture()
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int i = 0; i < width; i++)
+                {
+                    std::cout << get_texture(i, j) << " ";
                 }
                 std::cout << std::endl;
             }
@@ -156,27 +199,59 @@ namespace Rasterizer
 
         void draw_triangle_frame(const Vector2I &a, const Vector2I &b, const Vector2I &c, const Vector3D &color)
         {
-            // 只画线框三角形
+            // 只画线框2D三角形
             draw_line(a, b, color);
             draw_line(b, c, color);
             draw_line(c, a, color);
         }
 
-        void draw_triangle_filled(const Vector2I &a, const Vector2I &b, const Vector2I &c, const Vector3D &color)
+        void draw_triangle_2D_filled(const Vector2I &a, const Vector2I &b, const Vector2I &c, const Vector3D &color)
         {
-            return draw_triangle_filled(Triangle2I(a, b, c), color);
+            return draw_triangle_2D_filled(Triangle2I(a, b, c), color);
         }
 
-        void draw_triangle_filled(const Triangle2I &tri, const Vector3D &color)
+        void draw_triangle_3D_filled(const Triangle3D &tri, const Vector3D &color)
         {
-            // 画一个涂满颜色的三角形
+            // 画一个涂满颜色的3D三角形
             // 包围盒
-            Vector2I max_vec = tri.maximum();
-            Vector2I min_vec = tri.minimum();
-            int x_max = std::min({max_vec.x, height - 1});
-            int y_max = std::min({max_vec.y, height - 1});
-            int x_min = std::max({min_vec.x, 0});
-            int y_min = std::max({min_vec.y, 0});
+            std::vector<Number> max_vec = tri.maximum();
+            std::vector<Number> min_vec = tri.minimum();
+            int x_max = std::min((int)max_vec[0], height - 1);
+            int y_max = std::min((int)max_vec[1], height - 1);
+            int x_min = std::max((int)min_vec[0], 0);
+            int y_min = std::max((int)min_vec[1], 0);
+            // 遍历包围盒
+            Vector3D p;
+            for (p.x = x_min; p.x <= x_max; p.x++)
+            {
+                for (p.y = y_min; p.y <= y_max; p.y++)
+                {
+                    Vector3D bc_screen = tri.barycentric(p);
+                    // 重心在三角形外不渲染
+                    if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+                    {
+                        continue;
+                    }
+                    p.z = tri.a.z * bc_screen.x + tri.b.z * bc_screen.y + tri.c.z * bc_screen.z;
+                    if (get_depth_value(p.x, p.y) < p.z)
+                    {
+                        set_depth_value(p.x, p.y, p.z);
+                        set_pixel_color(p.x, p.y, color);
+                    }
+                }
+            }
+        }
+
+        void draw_triangle_2D_filled(const Triangle2I &tri, const Vector3D &color)
+        {
+            // 画一个涂满颜色的2D三角形
+            // 包围盒
+            std::vector<int> max_vec = tri.maximum();
+            std::vector<int> min_vec = tri.minimum();
+            int x_max = std::min((int)max_vec[0], height - 1);
+            int y_max = std::min((int)max_vec[1], height - 1);
+            int x_min = std::max((int)min_vec[0], 0);
+            int y_min = std::max((int)min_vec[1], 0);
 
             // 遍历包围盒
             Vector2I p;
@@ -184,7 +259,7 @@ namespace Rasterizer
             {
                 for (p.y = y_min; p.y <= y_max; p.y++)
                 {
-                    Vector3I bc_screen = tri.barycentric(p);
+                    Vector3D bc_screen = tri.barycentric(p);
                     // 重心在三角形外不渲染
                     if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
                     {
@@ -213,6 +288,7 @@ namespace Rasterizer
                 }
             }
         }
+
         void set_mesh_filled(Mesh &mesh)
         {
             // 将模型的每个面都涂上随机颜色
@@ -227,7 +303,29 @@ namespace Rasterizer
                 }
                 Triangle2I tri(screen_coords[0], screen_coords[1], screen_coords[2]);
                 Vector3D color(rand() % 255, rand() % 255, rand() % 255);
-                draw_triangle_filled(tri, color);
+                draw_triangle_2D_filled(tri, color);
+            }
+        }
+
+        void set_mesh_filled_gray(Mesh &mesh, const Vector3D &light_dir)
+        {
+            // 将模型的每个面都涂上随机颜色
+            for (int i = 0; i < mesh.face_num(); i++)
+            {
+                std::vector<int> face = mesh.faces[i];
+                Vector3D screen_coords[3];
+                Vector3D world_coords[3];
+                for (int j = 0; j < 3; j++)
+                {
+                    world_coords[j] = mesh.vertices[face[j]];
+                    screen_coords[j] = world_to_screen(world_coords[j]);
+                }
+                Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2]);
+                Vector3D normal = Triangle3D(world_coords[0], world_coords[1], world_coords[2]).normal;
+                double intensity = normal * light_dir;
+                // Vector3D color(rand() % 255, rand() % 255, rand() % 255);
+                Vector3D color(intensity * 255, intensity * 255, intensity * 255);
+                draw_triangle_3D_filled(tri, color);
             }
         }
 
@@ -253,9 +351,14 @@ namespace Rasterizer
                 {
                     // 默认光照是白色
                     Vector3D color(intensity * 255, intensity * 255, intensity * 255);
-                    draw_triangle_filled(tri, color);
+                    draw_triangle_2D_filled(tri, color);
                 }
             }
+        }
+
+        Vector3D world_to_screen(const Vector3D &world)
+        {
+            return Vector3D((world.x + 1.) * width / 2. + 0.5, (world.y + 1.) * height / 2. + 0.5, world.z);
         }
     };
 }
