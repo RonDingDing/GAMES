@@ -16,40 +16,6 @@ void show_bytes(unsigned char *start, size_t len)
     printf("\n");
 }
 
-bool is_little_endian()
-{
-    int i = 0x11223344;
-    char *p;
-
-    p = (char *)&i;
-    if (*p == 0x44)
-    {
-        return true;
-    }
-    return false;
-}
-
-template <typename Type>
-Type read(std::ifstream &tga_file, size_t num)
-{
-    char some[num];
-    tga_file.read(some, num);
-
-    show_bytes((unsigned char *)(&some), num);
-    // if (!is_little_endian())
-    // {
-    //     for (size_t i = 0; i < num - 1; i++)
-    //     {
-    //         char s = some[i];
-    //         some[i] = some[num - i - 1];
-    //         some[num - i - 1] = s;
-    //     }
-    // }
-
-    Type *a = (Type *)(some);
-    return *a;
-}
-
 namespace Rasterizer
 {
     using Byte = unsigned char;
@@ -90,21 +56,69 @@ namespace Rasterizer
 
         void load(const char *filename)
         {
-            if (data)
-            {
-                delete[] data;
-            }
-            data = nullptr;
-            std::ifstream tga_file(filename);
-            tga_file.open(filename, std::ios::binary);
+            std::ifstream tga_file(filename, std::ios::in | std::ios::binary);
             if (!tga_file.is_open())
             {
                 std::cout << "Cannot open this file: " << filename << std::endl;
-                tga_file.close();
                 return;
             }
-            read<int>(tga_file, 4);
+
+            int file_size = read_size(tga_file);
+            int version = read_version(tga_file);
+            TgaHeader header;
+            read_header(tga_file, header);
+            std::cout << "File size: " << file_size << std::endl;
+            std::cout << "TGA version: " << version << std::endl;
+            std::cout << "ID LENGTH: " << (int)header.id_length << std::endl;
+            std::cout << "CM TYPE: " << (int)header.color_map_type << std::endl;
+            std::cout << "IMAGE TYPE: " << (int)header.image_type << std::endl;
+            std::cout << "FIRST MAP ENTRY: " << header.color_map_start << std::endl;
+            std::cout << "NUM MAP ENTRIES: " << header.color_map_length << std::endl;
+            std::cout << "BYTES PER ENTRY: " << (int)header.color_map_depth << std::endl;
+            std::cout << "ORIGIN: " << header.x_offset << "," << header.x_offset << std::endl;
+            std::cout << "SIZE: " << header.width << "," << header.height << ":" << (int)header.pixel_depth << std::endl;
+            std::cout << "DESCRIPTOR: " << (int)header.image_descriptor << std::endl;
+
+            width = header.width;
+            height = header.height;
+
             // TODO
+        }
+
+    private:
+        int read_size(std::ifstream &tga_file)
+        {
+            tga_file.seekg(0, std::ios::end);
+            int file_size = (int)tga_file.tellg();
+
+            return file_size;
+        }
+
+        int read_version(std::ifstream &tga_file)
+        {
+            char version_string[17] = "";
+            tga_file.seekg(-18, std::ios::end);
+            tga_file.read(version_string, 16);
+            int version = (std::string(version_string) == "TRUEVISION-XFILE") ? 2 : 1;
+            tga_file.seekg(0, std::ios::beg);
+            return version;
+        }
+
+        void read_header(std::ifstream &tga_file, TgaHeader &header)
+        {
+            tga_file.read((char *)(&header.id_length), sizeof(header.id_length));
+            tga_file.read((char *)(&header.color_map_type), sizeof(header.color_map_type));
+            tga_file.read((char *)(&header.image_type), sizeof(header.image_type));
+            tga_file.read((char *)(&header.color_map_start), sizeof(header.color_map_start));
+            tga_file.read((char *)(&header.color_map_length), sizeof(header.color_map_length));
+            tga_file.read((char *)(&header.color_map_depth), sizeof(header.color_map_depth));
+            tga_file.read((char *)(&header.x_offset), sizeof(header.x_offset));
+            tga_file.read((char *)(&header.y_offset), sizeof(header.y_offset));
+            tga_file.read((char *)(&header.width), sizeof(header.width));
+            tga_file.read((char *)(&header.height), sizeof(header.height));
+            tga_file.read((char *)(&header.pixel_depth), sizeof(header.pixel_depth));
+            tga_file.read((char *)(&header.image_descriptor), sizeof(header.image_descriptor));
+            return;
         }
     };
 }
