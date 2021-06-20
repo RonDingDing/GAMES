@@ -81,6 +81,9 @@ namespace Rasterizer
         VectorN(Number X, Number Y, Number Z) : x(X), y(Y), z(Z) {}
 
         template <class U>
+        VectorN(const std::vector<U> &v) : x((Number)(v[0])), y((Number)(v[1])), z((Number)(v[2])) {}
+
+        template <class U>
         VectorN<3, Number>(const VectorN<3, U> &v);
 
         Number &operator[](const Size i)
@@ -202,7 +205,7 @@ namespace Rasterizer
     template <Size dimension, typename Number>
     std::ostream &operator<<(std::ostream &out, VectorN<dimension, Number> &v)
     {
-        for (unsigned int i = 0; i < dimension; i++)
+        for (Size i = 0; i < dimension; i++)
         {
             out << v[i] << " ";
         }
@@ -297,9 +300,13 @@ namespace Rasterizer
         Mat<dimension_row - 1, dimension_column - 1, Number> get_minor(Size row, Size col) const
         {
             Mat<dimension_row - 1, dimension_column - 1, Number> ret;
-            for (Size i = dimension_row - 1; i--;)
-                for (Size j = dimension_column - 1; j--; ret[i][j] = rows[i < row ? i : i + 1][j < col ? j : j + 1])
-                    ;
+            for (Size i = 0; i < dimension_row - 1; i++)
+            {
+                for (Size j = 0; j < dimension_column - 1; j++)
+                {
+                    ret[i][j] = rows[i < row ? i : i + 1][j < col ? j : j + 1];
+                }
+            }
             return ret;
         }
 
@@ -311,9 +318,13 @@ namespace Rasterizer
         Mat<dimension_row, dimension_column, Number> adjugate() const
         {
             Mat<dimension_row, dimension_column, Number> ret;
-            for (Size i = dimension_row; i--;)
-                for (Size j = dimension_column; j--; ret[i][j] = cofactor(i, j))
-                    ;
+            for (Size i = 0; i < dimension_row - 1; i++)
+            {
+                for (Size j = 0; j < dimension_column - 1; j++)
+                {
+                    ret[i][j] = cofactor(i, j);
+                }
+            }
             return ret;
         }
 
@@ -332,8 +343,10 @@ namespace Rasterizer
         Mat<dimension_column, dimension_row, Number> transpose()
         {
             Mat<dimension_column, dimension_row, Number> ret;
-            for (Size i = dimension_column; i--; ret[i] = this->col(i))
-                ;
+            for (Size i = 0; i < dimension_row - 1; i++)
+            {
+                ret[i] = this->col(i);
+            }
             return ret;
         }
     };
@@ -385,7 +398,6 @@ namespace Rasterizer
         return out;
     }
 
-
     // /////////////////////////////////////////////////////////////////////////////////
 
     typedef VectorN<2, double> Vector2D;
@@ -393,5 +405,6 @@ namespace Rasterizer
     typedef VectorN<3, double> Vector3D;
     typedef VectorN<3, int> Vector3I;
     typedef VectorN<4, double> Vector4D;
+    typedef VectorN<4, int> Vector4I;
     typedef Mat<4, 4, double> Matrix4D;
 }

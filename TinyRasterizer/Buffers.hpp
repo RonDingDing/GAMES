@@ -323,9 +323,32 @@ namespace Rasterizer
                 Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2]);
                 Vector3D normal = Triangle3D(world_coords[0], world_coords[1], world_coords[2]).normal;
                 double intensity = normal * light_dir;
-                // Vector3D color(rand() % 255, rand() % 255, rand() % 255);
                 Vector3D color(intensity * 255, intensity * 255, intensity * 255);
                 draw_triangle_3D_filled(tri, color);
+            }
+        }
+
+        void set_mesh_with_uv(Mesh &mesh)
+        {
+            // 将模型的每个面都涂上随机颜色
+            for (int i = 0; i < mesh.face_num(); i++)
+            {
+                std::vector<int> face = mesh.faces[i];
+                Vector3D screen_coords[3];
+                Vector3D world_coords[3];
+                for (int j = 0; j < 3; j++)
+                {
+                    world_coords[j] = mesh.vertices[face[j]];
+                    screen_coords[j] = world_to_screen(world_coords[j]);
+                }
+                Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2]);
+                std::vector<int> face_indices = mesh.face_tex[i];
+                Vector3D uvw;
+                for (int k = 0; k < 3; k++)
+                {
+                    uvw[k] = (Number)(mesh.texture[mesh.face_tex[i][k]][k]);
+                }
+                draw_triangle_3D_filled(tri, uvw * 255);
             }
         }
 

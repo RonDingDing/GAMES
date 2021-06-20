@@ -13,16 +13,14 @@ namespace Rasterizer
     class ObjectLoader
     {
     public:
-        std::vector<Vector3D> vertices;
-        std::vector<std::vector<int>> faces;
-        std::vector<Vector3D> texture;
-        std::vector<std::vector<int>> face_tex;
+        std::vector<Vector3D> vertices, texture;
+        std::vector<std::vector<int>> faces, face_tex;
 
         void clear()
         {
             vertices.clear();
-            faces.clear();
             texture.clear();
+            faces.clear();
             face_tex.clear();
         }
 
@@ -54,8 +52,8 @@ namespace Rasterizer
                     load_texture(line_stream);
                 }
             }
-            std::cout << "verticess num: " << vertices.size() << ", face num: " << faces.size() << ", texture num: " << texture.size() << std::endl;
-            return Mesh(vertices, faces);
+            std::cout << "verticess num: " << vertices.size() << ", face num: " << faces.size() << ", texture num: " << texture.size() << ", face_tex num: " << face_tex.size() << std::endl;
+            return Mesh(vertices, texture, faces, face_tex);
         }
 
     private:
@@ -116,17 +114,17 @@ namespace Rasterizer
                 one_face.emplace_back(p1 - 1);
                 one_face.emplace_back(p2 - 1);
                 one_face.emplace_back(p3 - 1);
+                faces.emplace_back(one_face);
 
                 one_face_tex.emplace_back(t1 - 1);
                 one_face_tex.emplace_back(t2 - 1);
                 one_face_tex.emplace_back(t3 - 1);
-                texture.emplace_back(one_face_tex);
+                face_tex.emplace_back(one_face_tex);
             }
         }
 
         void load_vertices(std::istringstream &line_stream)
         {
-
             char ctrash = 0;
             line_stream >> ctrash;
             Number x, y, z;
