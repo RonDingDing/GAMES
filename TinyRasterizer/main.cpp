@@ -18,37 +18,14 @@ Vector3D indigo = {0x0, 0xff, 0xff};
 Vector3D purple = {0x8b, 0x0, 0xff};
 Vector3D white = {0xff, 0xff, 0xff};
 
-void print_color()
+void print_color(const Vector3D &color)
 {
     Buffers buf = {700, 700};
     for (int i = 0; i < 700 * 100; i++)
     {
-        buf.pixel[i] = red;
+        buf.pixel[i] = color;
     }
-    for (int i = 700 * 100; i < 700 * 200; i++)
-    {
-        buf.pixel[i] = orange;
-    }
-    for (int i = 700 * 200; i < 700 * 300; i++)
-    {
-        buf.pixel[i] = yellow;
-    }
-    for (int i = 700 * 300; i < 700 * 400; i++)
-    {
-        buf.pixel[i] = green;
-    }
-    for (int i = 700 * 400; i < 700 * 500; i++)
-    {
-        buf.pixel[i] = indigo;
-    }
-    for (int i = 700 * 500; i < 700 * 600; i++)
-    {
-        buf.pixel[i] = blue;
-    }
-    for (int i = 700 * 600; i < 700 * 700; i++)
-    {
-        buf.pixel[i] = purple;
-    }
+     
     PpmImage c = {buf};
     c.draw_to("output");
 }

@@ -407,4 +407,14 @@ namespace Rasterizer
     typedef VectorN<4, double> Vector4D;
     typedef VectorN<4, int> Vector4I;
     typedef Mat<4, 4, double> Matrix4D;
+
+    template <typename Number>
+    class Color
+    {
+    public:
+        Vector3D rgb;
+        Number a;
+
+        Color(Number r, Number g, Number b, Number al) : rgb({r, g, b}), a(al) {}
+    };
 }
