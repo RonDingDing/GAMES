@@ -43,6 +43,12 @@ namespace Rasterizer
         int width = 0;
         int height = 0;
         int bytespp = 0;
+        enum Format
+        {
+            GRAYSCALE = 1,
+            RGB = 3,
+            RGBA = 4
+        };
 
         std::vector<Vector3D> buffer = {};
         TgaImage() : data(nullptr), width(0), height(0), bytespp(0) {}
@@ -81,11 +87,84 @@ namespace Rasterizer
 
             width = header.width;
             height = header.height;
+            bytespp = header.pixel_depth >> 3; // 即/8
 
+            std::string id = read_id(tga_file, header.id_length);
+            std::cout << id << std::endl;
+
+            std::vector<bool> result = read_image_type(header.image_type);
+            bool has_color_map = result[0], rle_encoded = result[1], supported = result[2];
+
+            if (!supported)
+            {
+                std::cout << "Cannot parse this file: " << filename << std::endl;
+                return;
+            }
+            if (width <= 0 || height <= 0 || (bytespp != GRAYSCALE && bytespp != RGB && bytespp != RGBA))
+            {
+                tga_file.close();
+                std::cout << "Bad bpp (or width/height) value." << std::endl;
+                return;
+            }
+            read_image_data(tga_file, bytespp, width, height);
             // TODO
         }
 
     private:
+        void read_image_data(std::ifstream &tga_file, const int &bytespp, const int &width, const int &height)
+        {
+            if (data)
+            {
+                delete[] data;
+            }
+            size_t image_data_size = bytespp * width * height;
+            data = new char[image_data_size];
+            tga_file.read(data, image_data_size);
+        }
+
+        std::vector<bool> read_image_type(int image_type)
+        {
+            bool has_color_map, rle_encoded, supported = true;
+            switch (image_type)
+            {
+            case 0:
+                has_color_map = false;
+                rle_encoded = false;
+                break;
+            case 1:
+                has_color_map = true;
+                rle_encoded = false;
+                break;
+            case 3:
+                has_color_map = false;
+                rle_encoded = false;
+                break;
+            case 9:
+                has_color_map = true;
+                rle_encoded = true;
+                break;
+            case 10:
+                has_color_map = false;
+                rle_encoded = true;
+                break;
+            case 11:
+                has_color_map = false;
+                rle_encoded = true;
+                break;
+            default:
+                supported = false;
+                break;
+            }
+            return {has_color_map, rle_encoded, supported};
+        }
+
+        std::string read_id(std::ifstream &tga_file, const int &length)
+        {
+            char id[] = "";
+            tga_file.read(id, length);
+            return std::string(id);
+        }
+
         int read_size(std::ifstream &tga_file)
         {
             tga_file.seekg(0, std::ios::end);
