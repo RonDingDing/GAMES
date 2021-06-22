@@ -32,7 +32,7 @@ namespace Rasterizer
                 throw std::out_of_range("Out of buffer range!");
             }
             // pixel[width * yy + xx] = color;
-            pixel[(height - yy) * width + xx] = color;
+            pixel[(height - yy - 1) * width + xx] = color;
         }
 
         Vector3D &get_pixel_color(const int &xx, const int &yy)
@@ -42,7 +42,7 @@ namespace Rasterizer
                 throw std::out_of_range("Out of buffer range!");
             }
             // return pixel[width * yy + xx];
-            return pixel[(height - yy) * width + xx];
+            return pixel[(height - yy - 1) * width + xx];
         }
 
         void set_depth_value(const int &xx, const int &yy, const Number &dep)
@@ -52,7 +52,7 @@ namespace Rasterizer
                 throw std::out_of_range("Out of buffer range!");
             }
             // return depth[width * yy + xx];
-            depth[(height - yy) * width + xx] = dep;
+            depth[(height - yy - 1) * width + xx] = dep;
         }
 
         Number &get_depth_value(const int &xx, const int &yy)
@@ -62,7 +62,7 @@ namespace Rasterizer
                 throw std::out_of_range("Out of buffer range!");
             }
             // return depth[width * yy + xx];
-            return depth[(height - yy) * width + xx];
+            return depth[(height - yy - 1) * width + xx];
         }
 
         void set_texture(const int &xx, const int &yy, const Vector3D &tex)
@@ -72,7 +72,7 @@ namespace Rasterizer
                 throw std::out_of_range("Out of buffer range!");
             }
             // return texture[width * yy + xx];
-            texture[(height - yy) * width + xx] = tex;
+            texture[(height - yy - 1) * width + xx] = tex;
         }
 
         Vector3D &get_texture(const int &xx, const int &yy)
@@ -82,7 +82,7 @@ namespace Rasterizer
                 throw std::out_of_range("Out of buffer range!");
             }
             // return depth[width * yy + xx];
-            return texture[(height - yy) * width + xx];
+            return texture[(height - yy - 1) * width + xx];
         }
 
         void resize(const int &xx, const int &yy)

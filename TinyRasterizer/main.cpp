@@ -32,7 +32,7 @@ void print_color(const Vector3D &color)
 
 int main(int argc, char **argv)
 {
-    Buffers buf = {1000, 1000};
+    // Buffers buf = {1000, 1000};
     // buf.draw_line(Vector2D(1, 11), Vector2D(100, 800), red);
     // buf.draw_line(Vector2D(100, 800), Vector2D(500, 300), green);
     // buf.draw_line(Vector2D(500, 300), Vector2D(1, 11), white);
@@ -53,12 +53,17 @@ int main(int argc, char **argv)
     TgaImage tgaimage;
     if (tgaimage.load("head.tga"))
     {
-        PpmImage ppmimage = tgaimage;
-        ppmimage.draw_to("output");
-    }
 
-    // // screen line
-    // buf.draw_line(Vector2I(10, 10), Vector2I(790, 10), white);
-    // PpmImage con = PpmImage(buf);
-    // con.draw_to("output");
+        // tgaimage.print_pixel();
+        // tgaimage.flip_x();
+        // std::cout << std::endl;
+        // tgaimage.print_pixel();
+
+        // }
+
+        // // screen line
+        // buf.draw_line(Vector2I(10, 10), Vector2I(790, 10), white);
+        PpmImage con = PpmImage(tgaimage);
+        con.draw_to("output");
+    }
 }

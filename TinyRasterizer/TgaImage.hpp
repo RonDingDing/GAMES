@@ -71,14 +71,9 @@ namespace Rasterizer
             }
 
             int file_size = read_size(tga_file);
-
-            std::cout << "1111" << std::endl;
-
             int version = read_version(tga_file);
             TgaHeader header;
             read_header(tga_file, header);
-
-            std::cout << "2222" << std::endl;
 
             std::cout << "File size: " << file_size << std::endl;
             std::cout << "TGA version: " << version << std::endl;
@@ -144,23 +139,49 @@ namespace Rasterizer
             return true;
         }
 
-    private:
+        void print_pixel()
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int i = 0; i < width; i++)
+                {
+                    std::cout << buffer[(height - j - 1) * width + i] << " ";
+                }
+                std::cout << std::endl;
+            }
+        }
+
         void flip_y()
         {
-
-            for (size_t j = 0; j < (size_t)height; j++)
+            for (size_t j = 0; j < (size_t)height / 2; j++)
             {
                 for (size_t i = 0; i < (size_t)width; i++)
                 {
-                    size_t original = (height - j) * width + i;
-                    size_t after = (1 + j) * width + i;
-                    auto a = buffer[original];
-                    buffer[original] = buffer[after];
+                    size_t before = (height - j - 1) * width + i;
+                    size_t after = j * width + i;
+                    auto a = buffer[before];
+                    buffer[before] = buffer[after];
                     buffer[after] = a;
                 }
             }
         }
 
+        void flip_x()
+        {
+            for (size_t j = 0; j < (size_t)height; j++)
+            {
+                for (size_t i = 0; i < (size_t)width / 2; i++)
+                {
+                    size_t before = j * width + i;
+                    size_t after = j * width + width - i - 1;
+                    auto a = buffer[before];
+                    buffer[before] = buffer[after];
+                    buffer[after] = a;
+                }
+            }
+        }
+
+    private:
         void put_color_data_to_buffer(unsigned char *pixel_data, const size_t &pixel_depth, const bool &has_color_map)
         {
             if (has_color_map)
