@@ -25,7 +25,7 @@ void print_color(const Vector3D &color)
     {
         buf.pixel[i] = color;
     }
-     
+
     PpmImage c = {buf};
     c.draw_to("output");
 }
@@ -51,7 +51,12 @@ int main(int argc, char **argv)
     // buf.draw_line(Vector2I(330, 463), Vector2I(594, 200), blue);
 
     TgaImage tgaimage;
-    tgaimage.load("head.tga");
+    if (tgaimage.load("head.tga"))
+    {
+        PpmImage ppmimage = tgaimage;
+        ppmimage.draw_to("output");
+    }
+
     // // screen line
     // buf.draw_line(Vector2I(10, 10), Vector2I(790, 10), white);
     // PpmImage con = PpmImage(buf);

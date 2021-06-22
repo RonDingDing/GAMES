@@ -1,6 +1,7 @@
 #pragma once
 #include "Buffers.hpp"
 #include "VectorN.hpp"
+#include "TgaImage.hpp"
 #include <iostream>
 #include <vector>
 #include <fstream>
@@ -16,6 +17,11 @@ namespace Rasterizer
 
         PpmImage(const Buffers &buf) : width(buf.width), height(buf.height), buffer(buf.pixel)
         {
+        }
+
+        PpmImage(const TgaImage &tga) : width(tga.width), height(tga.height), buffer(tga.buffer)
+        {
+            std::cout << tga.buffer.size() <<"   "<< tga.width * tga.height << std::endl;
         }
 
         void draw_to(const std::string &filename)

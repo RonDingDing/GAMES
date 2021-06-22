@@ -61,19 +61,25 @@ namespace Rasterizer
         {
         }
 
-        void load(const char *filename)
+        bool load(const char *filename)
         {
             std::ifstream tga_file(filename, std::ios::in | std::ios::binary);
             if (!tga_file.is_open())
             {
                 std::cout << "Cannot open this file: " << filename << std::endl;
-                return;
+                return false;
             }
 
             int file_size = read_size(tga_file);
+
+            std::cout << "1111" << std::endl;
+
             int version = read_version(tga_file);
             TgaHeader header;
             read_header(tga_file, header);
+
+            std::cout << "2222" << std::endl;
+
             std::cout << "File size: " << file_size << std::endl;
             std::cout << "TGA version: " << version << std::endl;
             std::cout << "ID LENGTH: " << (int)header.id_length << std::endl;
@@ -89,33 +95,29 @@ namespace Rasterizer
             width = header.width;
             height = header.height;
             bytespp = header.pixel_depth >> 3; // 即/8
+
             int pixel_num = width * height;
-            int data_size = pixel_num * bytespp;
-
-            char *data = new char[data_size];
-
-            std::string id = read_id(tga_file, header.id_length);
-            std::cout << id << std::endl;
+            int pixel_depth = header.pixel_depth;
+            int data_size = pixel_num * pixel_depth;
 
             std::vector<bool> result = read_image_type(header.image_type);
             bool has_color_map = result[0], rle_encoded = result[1], supported = result[2];
-            if (bytespp != 3 && bytespp != 4)
+            if ((int)(pixel_depth) != 24 && (int)(pixel_depth) != 32)
             {
                 std::cout << "Temporarily not supported: bytespp = " << bytespp << std::endl;
-                return;
+                return false;
             }
             if (!supported)
             {
                 std::cout << "Cannot parse this file: " << filename << std::endl;
-                return;
+                return false;
             }
             if (width <= 0 || height <= 0 || (bytespp != GRAYSCALE && bytespp != RGB && bytespp != RGBA))
             {
                 tga_file.close();
                 std::cout << "Bad bpp (or width/height) value." << std::endl;
-                return;
+                return false;
             }
-            char *color_map;
             if (has_color_map)
             {
                 if (header.color_map_length == 0 || header.color_map_depth == 0)
@@ -123,99 +125,118 @@ namespace Rasterizer
                     tga_file.close();
                     std::cout << "Bad bpp (or width/height) value." << std::endl;
                 }
-                char *color_map = new char[header.color_map_length];
+                char color_map[header.color_map_length];
                 read_image_color_map(tga_file, header.color_map_length, header.color_map_depth, color_map);
             }
 
-            read_image_data(tga_file, data_size, data);
+            buffer.clear();
+            buffer.reserve(width * height);
             if (rle_encoded)
             {
-                parse_encoded(bytespp, data_size, data);
-            }
-
-            if (has_color_map)
-            {
-                convert_data_unmapped(data, color_map);
+                parse_encoded(tga_file, bytespp, pixel_num, pixel_depth, has_color_map);
             }
             else
             {
-                convert_data_mapped(data, bytespp, pixel_num);
+                parse_unencoded(tga_file, bytespp, pixel_num, pixel_depth, has_color_map, data_size);
             }
+            flip_y();
 
-            delete[] data;
-            delete[] color_map;
+            return true;
         }
 
     private:
-        void convert_data_mapped(char *data, const int &bytespp, const int &pixel_num)
+        void flip_y()
         {
-            buffer.clear();
 
-            for (int i = 0; i < pixel_num; i += bytespp)
+            for (size_t j = 0; j < (size_t)height; j++)
             {
-                if (bytespp == 4 || bytespp == 3)
+                for (size_t i = 0; i < (size_t)width; i++)
                 {
-                    buffer.push_back({data[i + 2], data[i + 1], data[i]});
-                    // bgr
+                    size_t original = (height - j) * width + i;
+                    size_t after = (1 + j) * width + i;
+                    auto a = buffer[original];
+                    buffer[original] = buffer[after];
+                    buffer[after] = a;
                 }
             }
         }
 
-        void convert_data_unmapped(char *data, char *color_map)
+        void put_color_data_to_buffer(unsigned char *pixel_data, const size_t &pixel_depth, const bool &has_color_map)
         {
+            if (has_color_map)
+            {
+            }
+            if (pixel_depth == 24 || pixel_depth == 32)
+            {
+                buffer.emplace_back(pixel_data[2], pixel_data[1], pixel_data[0]);
+            }
         }
 
-        void parse_encoded(const int &bytespp, const int &data_size, char *data)
+        bool parse_unencoded(std::ifstream &tga_file, const size_t &bytespp, const size_t &pixel_num, const size_t &pixel_depth, const bool &has_color_map, const size_t &data_size)
         {
-            char *temp_data = new char[data_size];
-            memcpy(temp_data, data, data_size);
-
-            int current_byte = 0;
-
-            int bytes_per_rle = bytespp + 1;
-
-            for (int i = 0; current_byte < data_size;)
+            unsigned char pixel_data[bytespp];
+            for (size_t i = 0; i < pixel_num; i++)
             {
-                int run_count = (127 & temp_data[i]) + 1;
+                tga_file.read((char *)&pixel_data, data_size);
+                put_color_data_to_buffer(pixel_data, pixel_depth, has_color_map);
+            }
+            return true;
+        }
 
-                if (128 & temp_data[i])
+        bool parse_encoded(std::ifstream &tga_file, const size_t &bytespp, const size_t &pixel_num, const size_t &pixel_depth, const bool &has_color_map)
+        {
+
+            size_t current_pixel = 0;
+            do
+            {
+                char head = tga_file.get();
+                size_t same_pixel_num;
+
+                if (head & 128)
                 {
-                    for (int j = 0; j < run_count; j++)
+                    same_pixel_num = (head & 127) + 1;
+                    unsigned char pixel_data[bytespp];
+                    tga_file.read((char *)&pixel_data, bytespp);
+
+                    for (size_t j = 0; j < same_pixel_num; j++)
                     {
-                        for (int k = 1; k < bytes_per_rle; k++)
-                            data[current_byte++] = temp_data[i + k];
+                        put_color_data_to_buffer(pixel_data, pixel_depth, has_color_map);
+                        current_pixel++;
+                        if (current_pixel > pixel_num)
+                        {
+                            std::cerr << "Too many pixels read\n";
+                            return false;
+                        }
                     }
-
-                    i += bytes_per_rle;
                 }
-
                 else
                 {
-                    i++;
-                    for (int j = 0; j < run_count; j++)
+                    same_pixel_num = head + 1;
+                    unsigned char pixel_data[bytespp];
+                    for (size_t j = 0; j < same_pixel_num; j++)
                     {
-                        for (int k = 0; k < bytespp; k++)
-                            data[current_byte++] = temp_data[i + k];
-
-                        i += bytespp;
+                        tga_file.read((char *)&pixel_data, bytespp);
+                        put_color_data_to_buffer(pixel_data, pixel_depth, has_color_map);
+                        current_pixel++;
+                        if (current_pixel > pixel_num)
+                        {
+                            std::cerr << "Too many pixels read\n";
+                            return false;
+                        }
                     }
                 }
-            }
 
-            delete[] temp_data;
+            } while (current_pixel < pixel_num);
+            return true;
         }
 
-        void read_image_data(std::ifstream &tga_file, const int &data_size, char *data)
+        void read_image_data(std::ifstream &tga_file, const int &file_size, char *data)
         {
-            tga_file.read(data, data_size);
+            tga_file.read(data, file_size);
         }
 
-        void read_image_color_map(std::ifstream &tga_file, const int &color_map_length, const int &color_map_depth, char *color_map)
+        void read_image_color_map(std::ifstream &tga_file, const size_t &color_map_length, const size_t &color_map_depth, char *color_map)
         {
-            if (color_map)
-            {
-                delete[] color_map;
-            }
             size_t image_color_map_size = color_map_length * color_map_depth;
             color_map = new char[image_color_map_size];
             tga_file.read(color_map, image_color_map_size);
