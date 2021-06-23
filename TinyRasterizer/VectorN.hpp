@@ -416,5 +416,6 @@ namespace Rasterizer
         Number a;
 
         Color(Number r, Number g, Number b, Number al) : rgb({r, g, b}), a(al) {}
+        Color(Number r, Number g, Number b) : rgb({r, g, b}), a(1.0) {}
     };
 }

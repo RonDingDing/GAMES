@@ -49,9 +49,11 @@ int main(int argc, char **argv)
     // buf.draw_line(Vector2I(20, 34), Vector2I(744, 400), red);
     // buf.draw_line(Vector2I(120, 434), Vector2I(444, 400), green);
     // buf.draw_line(Vector2I(330, 463), Vector2I(594, 200), blue);
-
+    // std::string name;
+    // std::cout << "Enter file name:";
+    // std::cin >> name;
     TgaImage tgaimage;
-    if (tgaimage.load("head.tga"))
+    if (tgaimage.load("football_seal.tga"))
     {
 
         // tgaimage.print_pixel();

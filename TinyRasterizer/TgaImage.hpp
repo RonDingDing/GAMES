@@ -99,7 +99,7 @@ namespace Rasterizer
             bool has_color_map = result[0], rle_encoded = result[1], supported = result[2];
             if ((int)(pixel_depth) != 24 && (int)(pixel_depth) != 32)
             {
-                std::cout << "Temporarily not supported: bytespp = " << bytespp << std::endl;
+                std::cout << "Temporarily not supported: pixel_depth = " << pixel_depth << std::endl;
                 return false;
             }
             if (!supported)
@@ -198,7 +198,7 @@ namespace Rasterizer
             unsigned char pixel_data[bytespp];
             for (size_t i = 0; i < pixel_num; i++)
             {
-                tga_file.read((char *)&pixel_data, data_size);
+                tga_file.read((char *)&pixel_data, bytespp);
                 put_color_data_to_buffer(pixel_data, pixel_depth, has_color_map);
             }
             return true;
@@ -274,6 +274,10 @@ namespace Rasterizer
                 break;
             case 1:
                 has_color_map = true;
+                rle_encoded = false;
+                break;
+            case 2:
+                has_color_map = false;
                 rle_encoded = false;
                 break;
             case 3:
