@@ -3,10 +3,13 @@ import os
 
 
 def convert_to_jpg(filename: str):
-    fullname = os.path.abspath(filename)
-    dirname, basename = os.path.split(fullname)
-    img = Image.open(fullname)
-    img.save(os.path.join(dirname, f"{basename}.jpg"))
+    try:
+        fullname = os.path.abspath(filename)
+        dirname, basename = os.path.split(fullname)
+        img = Image.open(fullname)
+        img.save(os.path.join(dirname, f"{basename}.jpg"))
+    except Exception as e:
+        print(f"Cannot convert {filename}." , e)
 
 
 def walker():
