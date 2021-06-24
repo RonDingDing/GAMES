@@ -53,6 +53,7 @@ int main(int argc, char **argv)
     // std::cout << "Enter file name:";
     // std::cin >> name;
     TgaImage tgaimage;
+    // if (tgaimage.load("head.tga"))
     if (tgaimage.load("head.tga"))
     {
 

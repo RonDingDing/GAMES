@@ -22,6 +22,7 @@ if __name__ == '__main__':
     os.system('make')
     os.system('cp ../obj/head.obj .')
     os.system('cp ../obj/head.tga .')
+    os.system('cp ../obj/football_seal.tga .')
     os.system('./TinyRasterizer')
     os.chdir('..')
     os.system('python3 convert_to_jpg.py')

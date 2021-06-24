@@ -66,7 +66,7 @@ namespace Rasterizer
             std::ifstream tga_file(filename, std::ios::in | std::ios::binary);
             if (!tga_file.is_open())
             {
-                std::cout << "Cannot open this file: " << filename << std::endl;
+                std::cerr << "Cannot open this file: " << filename << std::endl;
                 return false;
             }
 
@@ -83,7 +83,7 @@ namespace Rasterizer
             std::cout << "FIRST MAP ENTRY: " << header.color_map_start << std::endl;
             std::cout << "NUM MAP ENTRIES: " << header.color_map_length << std::endl;
             std::cout << "BYTES PER ENTRY: " << (int)header.color_map_depth << std::endl;
-            std::cout << "ORIGIN: " << header.x_offset << "," << header.x_offset << std::endl;
+            std::cout << "ORIGIN: " << header.x_offset << "," << header.y_offset << std::endl;
             std::cout << "SIZE: " << header.width << "," << header.height << ":" << (int)header.pixel_depth << std::endl;
             std::cout << "DESCRIPTOR: " << (int)header.image_descriptor << std::endl;
 
@@ -94,47 +94,56 @@ namespace Rasterizer
             int pixel_num = width * height;
             int pixel_depth = header.pixel_depth;
             int data_size = pixel_num * pixel_depth;
+            int color_map_depth = header.color_map_depth;
 
             std::vector<bool> result = read_image_type(header.image_type);
             bool has_color_map = result[0], rle_encoded = result[1], supported = result[2];
-            if ((int)(pixel_depth) != 24 && (int)(pixel_depth) != 32)
+            if ((int)(pixel_depth) != 24 && (int)(pixel_depth) != 32 && (int)(pixel_depth) != 8)
             {
-                std::cout << "Temporarily not supported: pixel_depth = " << pixel_depth << std::endl;
+                std::cerr << "Temporarily not supported: pixel_depth = " << pixel_depth << std::endl;
                 return false;
             }
             if (!supported)
             {
-                std::cout << "Cannot parse this file: " << filename << std::endl;
+                std::cerr << "Cannot parse this file: " << filename << std::endl;
                 return false;
             }
             if (width <= 0 || height <= 0 || (bytespp != GRAYSCALE && bytespp != RGB && bytespp != RGBA))
             {
                 tga_file.close();
-                std::cout << "Bad bpp (or width/height) value." << std::endl;
+                std::cerr << "Bad bpp (or width/height) value." << std::endl;
                 return false;
             }
+            char *color_map = nullptr;
             if (has_color_map)
             {
                 if (header.color_map_length == 0 || header.color_map_depth == 0)
                 {
                     tga_file.close();
-                    std::cout << "Bad bpp (or width/height) value." << std::endl;
+                    std::cerr << "Bad bpp (or width/height) value." << std::endl;
                 }
-                char color_map[header.color_map_length];
-                read_image_color_map(tga_file, header.color_map_length, header.color_map_depth, color_map);
+                read_image_color_map(tga_file, header.color_map_length, color_map_depth, color_map);
             }
 
             buffer.clear();
             buffer.reserve(width * height);
             if (rle_encoded)
             {
-                parse_encoded(tga_file, bytespp, pixel_num, pixel_depth, has_color_map);
+                parse_encoded(tga_file, bytespp, pixel_num, pixel_depth, has_color_map, color_map_depth, color_map);
             }
             else
             {
-                parse_unencoded(tga_file, bytespp, pixel_num, pixel_depth, has_color_map, data_size);
+                parse_unencoded(tga_file, bytespp, pixel_num, pixel_depth, has_color_map, color_map_depth, color_map, data_size);
             }
-            flip_y();
+            if (header.image_descriptor & 0x20)
+            {
+                flip_x();
+            }
+            if (!header.image_descriptor & 0x10)
+            { 
+                // 本来应该有这个bit才上下颠倒的，但读出来的buffer本来就是上下颠倒的，所以这么写
+                flip_y();
+            }
 
             return true;
         }
@@ -182,31 +191,90 @@ namespace Rasterizer
         }
 
     private:
-        void put_color_data_to_buffer(unsigned char *pixel_data, const size_t &pixel_depth, const bool &has_color_map)
+        bool put_color_data_to_buffer(unsigned char *pixel_data, const size_t &pixel_depth, const bool &has_color_map, const size_t &color_map_depth, char *color_map)
         {
             if (has_color_map)
             {
+                if (pixel_depth == 8)
+                {
+                    uint8_t entry_size = color_map_depth >> 3;
+                    uint8_t pixel_index = *((uint8_t *)pixel_data);
+                    uint8_t *real_map = (uint8_t *)color_map;
+                    buffer.emplace_back(real_map[pixel_index * entry_size + 2], real_map[pixel_index * entry_size + 1], real_map[pixel_index * entry_size]);
+                }
+                else if (pixel_depth == 16)
+                {
+                    uint16_t entry_size = color_map_depth >> 3;
+                    uint16_t pixel_index = *((uint16_t *)pixel_data);
+                    uint16_t *real_map = (uint16_t *)color_map;
+                    buffer.emplace_back(real_map[pixel_index * entry_size + 2], real_map[pixel_index * entry_size + 1], real_map[pixel_index * entry_size]);
+                }
+                else if (pixel_depth == 24)
+                {
+                    uint32_t entry_size = color_map_depth >> 3;
+                    uint32_t pixel_index = *((uint32_t *)pixel_data) & 0x00FFFFFF;
+                    uint8_t *real_map = (uint8_t *)color_map;
+                    uint8_t *array1 = new uint8_t[3]{real_map[pixel_index * entry_size + 0], real_map[pixel_index * entry_size + 1], real_map[pixel_index * entry_size + 2]};
+                    uint8_t *array2 = new uint8_t[3]{real_map[pixel_index * entry_size + 3], real_map[pixel_index * entry_size + 4], real_map[pixel_index * entry_size + 5]};
+                    uint8_t *array3 = new uint8_t[3]{real_map[pixel_index * entry_size + 6], real_map[pixel_index * entry_size + 7], real_map[pixel_index * entry_size + 8]};
+                    uint32_t b = *((uint32_t *)array3);
+                    uint32_t g = *((uint32_t *)array2);
+                    uint32_t r = *((uint32_t *)array1);
+                    buffer.emplace_back(b, g, r);
+                    delete[] array1;
+                    delete[] array2;
+                    delete[] array3;
+                }
+                else if (pixel_depth == 32)
+                {
+                    uint32_t entry_size = color_map_depth >> 3;
+                    uint32_t pixel_index = *((uint32_t *)pixel_data);
+                    uint32_t *real_map = (uint32_t *)color_map;
+                    buffer.emplace_back(real_map[pixel_index * entry_size + 2], real_map[pixel_index * entry_size + 1], real_map[pixel_index * entry_size]);
+                }
+                else
+                {
+                    std::cerr << "Not supported mapped pixel depth" << pixel_depth << std::endl;
+                    return false;
+                }
             }
-            if (pixel_depth == 24 || pixel_depth == 32)
+            else
             {
-                buffer.emplace_back(pixel_data[2], pixel_data[1], pixel_data[0]);
-            }
-        }
-
-        bool parse_unencoded(std::ifstream &tga_file, const size_t &bytespp, const size_t &pixel_num, const size_t &pixel_depth, const bool &has_color_map, const size_t &data_size)
-        {
-            unsigned char pixel_data[bytespp];
-            for (size_t i = 0; i < pixel_num; i++)
-            {
-                tga_file.read((char *)&pixel_data, bytespp);
-                put_color_data_to_buffer(pixel_data, pixel_depth, has_color_map);
+                if (pixel_depth == 24 || pixel_depth == 32)
+                {
+                    buffer.emplace_back(pixel_data[2], pixel_data[1], pixel_data[0]);
+                }
+                else if (pixel_depth == 8)
+                {
+                    buffer.emplace_back(pixel_data[2], 0, 0);
+                }
+                else
+                {
+                    std::cerr << "Not supported unmapped pixel depth" << pixel_depth << std::endl;
+                    return false;
+                }
             }
             return true;
         }
 
-        bool parse_encoded(std::ifstream &tga_file, const size_t &bytespp, const size_t &pixel_num, const size_t &pixel_depth, const bool &has_color_map)
+        bool parse_unencoded(std::ifstream &tga_file, const size_t &bytespp, const size_t &pixel_num, const size_t &pixel_depth, const bool &has_color_map, const size_t &color_map_depth, char *color_map, const size_t &data_size)
         {
+            size_t pixel_size = bytespp;
+            unsigned char pixel_data[pixel_size];
+            for (size_t i = 0; i < pixel_num; i++)
+            {
+                tga_file.read((char *)&pixel_data, pixel_size);
+                if (!put_color_data_to_buffer(pixel_data, pixel_depth, has_color_map, color_map_depth, color_map))
+                {
+                    return false;
+                };
+            }
+            return true;
+        }
 
+        bool parse_encoded(std::ifstream &tga_file, const size_t &bytespp, const size_t &pixel_num, const size_t &pixel_depth, const bool &has_color_map, const size_t &color_map_depth, char *color_map)
+        {
+            size_t pixel_size = bytespp;
             size_t current_pixel = 0;
             do
             {
@@ -216,16 +284,19 @@ namespace Rasterizer
                 if (head & 128)
                 {
                     same_pixel_num = (head & 127) + 1;
-                    unsigned char pixel_data[bytespp];
-                    tga_file.read((char *)&pixel_data, bytespp);
+                    unsigned char pixel_data[pixel_size];
+                    tga_file.read((char *)&pixel_data, pixel_size);
 
                     for (size_t j = 0; j < same_pixel_num; j++)
                     {
-                        put_color_data_to_buffer(pixel_data, pixel_depth, has_color_map);
+                        if (!put_color_data_to_buffer(pixel_data, pixel_depth, has_color_map, color_map_depth, color_map))
+                        {
+                            return false;
+                        };
                         current_pixel++;
                         if (current_pixel > pixel_num)
                         {
-                            std::cerr << "Too many pixels read\n";
+                            std::cerr << "Too many pixels read" << std::endl;
                             return false;
                         }
                     }
@@ -233,15 +304,18 @@ namespace Rasterizer
                 else
                 {
                     same_pixel_num = head + 1;
-                    unsigned char pixel_data[bytespp];
+                    unsigned char pixel_data[pixel_size];
                     for (size_t j = 0; j < same_pixel_num; j++)
                     {
-                        tga_file.read((char *)&pixel_data, bytespp);
-                        put_color_data_to_buffer(pixel_data, pixel_depth, has_color_map);
+                        tga_file.read((char *)&pixel_data, pixel_size);
+                        if (!put_color_data_to_buffer(pixel_data, pixel_depth, has_color_map, color_map_depth, color_map))
+                        {
+                            return false;
+                        };
                         current_pixel++;
                         if (current_pixel > pixel_num)
                         {
-                            std::cerr << "Too many pixels read\n";
+                            std::cerr << "Too many pixels read" << std::endl;
                             return false;
                         }
                     }
@@ -256,7 +330,7 @@ namespace Rasterizer
             tga_file.read(data, file_size);
         }
 
-        void read_image_color_map(std::ifstream &tga_file, const size_t &color_map_length, const size_t &color_map_depth, char *color_map)
+        void read_image_color_map(std::ifstream &tga_file, const size_t &color_map_length, const size_t &color_map_depth, char *&color_map)
         {
             size_t image_color_map_size = color_map_length * color_map_depth;
             color_map = new char[image_color_map_size];
