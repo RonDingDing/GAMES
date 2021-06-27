@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <optional>
 
 #include "VectorN.hpp"
 #include "Buffers.hpp"
@@ -39,8 +40,15 @@ int main(int argc, char **argv)
 
     // PicConvert con = {buf};
     // con.draw_ppm_to("output");
-    // ObjectLoader loader;
-    // Mesh mesh = loader.load("head.obj");
+    ObjectLoader loader;
+    std::optional<Mesh> mesh_p = loader.load("head.obj");
+    TgaImage tgaimage;
+    std::optional<TgaImage> image_p = tgaimage.load("head.tga");
+    if (mesh_p && image_p)
+    {
+        Mesh mesh = *mesh_p;
+        TgaImage texture = *image_p;
+    }
     // buf.set_mesh_filled_gray(mesh, Vector3D(0, 0, 1));
     // buf.set_mesh_with_uv(mesh);
     // buf.set_mesh_gray(mesh, Vector3D(0, 0, -1));
@@ -52,21 +60,22 @@ int main(int argc, char **argv)
     // std::string name;
     // std::cout << "Enter file name:";
     // std::cin >> name;
-    TgaImage tgaimage;
+    
+    
     // if (tgaimage.load("head.tga"))
-    if (tgaimage.load("head.tga"))
-    {
+    // {
 
-        // tgaimage.print_pixel();
-        // tgaimage.flip_x();
-        // std::cout << std::endl;
-        // tgaimage.print_pixel();
+    //     // tgaimage.print_pixel();
+    //     // tgaimage.flip_x();
+    //     // std::cout << std::endl;
+    //     // tgaimage.print_pixel();
 
-        // }
+    //     // }
 
-        // // screen line
-        // buf.draw_line(Vector2I(10, 10), Vector2I(790, 10), white);
-        PpmImage con = PpmImage(tgaimage);
-        con.draw_to("output");
-    }
+    //     // // screen line
+    //     // buf.draw_line(Vector2I(10, 10), Vector2I(790, 10), white);
+    //     PpmImage con = PpmImage(tgaimage);
+    //     con.draw_to("output");
+    // }
+    std::cout << std::endl;
 }

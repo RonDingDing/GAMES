@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <cstring>
+#include <optional>
 
 void show_bytes(unsigned char *start, size_t len)
 {
@@ -61,13 +62,13 @@ namespace Rasterizer
         {
         }
 
-        bool load(const char *filename)
+        std::optional<TgaImage> load(const std::string &filename)
         {
             std::ifstream tga_file(filename, std::ios::in | std::ios::binary);
             if (!tga_file.is_open())
             {
                 std::cerr << "Cannot open this file: " << filename << std::endl;
-                return false;
+                return std::nullopt;
             }
 
             int file_size = read_size(tga_file);
@@ -75,6 +76,7 @@ namespace Rasterizer
             TgaHeader header;
             read_header(tga_file, header);
 
+        #if DEBUG == 1
             std::cout << "File size: " << file_size << std::endl;
             std::cout << "TGA version: " << version << std::endl;
             std::cout << "ID LENGTH: " << (int)header.id_length << std::endl;
@@ -86,7 +88,8 @@ namespace Rasterizer
             std::cout << "ORIGIN: " << header.x_offset << "," << header.y_offset << std::endl;
             std::cout << "SIZE: " << header.width << "," << header.height << ":" << (int)header.pixel_depth << std::endl;
             std::cout << "DESCRIPTOR: " << (int)header.image_descriptor << std::endl;
-
+        #endif
+        
             width = header.width;
             height = header.height;
             bytespp = header.pixel_depth >> 3; // 即/8
@@ -101,18 +104,18 @@ namespace Rasterizer
             if ((int)(pixel_depth) != 24 && (int)(pixel_depth) != 32 && (int)(pixel_depth) != 8)
             {
                 std::cerr << "Temporarily not supported: pixel_depth = " << pixel_depth << std::endl;
-                return false;
+                return std::nullopt;
             }
             if (!supported)
             {
                 std::cerr << "Cannot parse this file: " << filename << std::endl;
-                return false;
+                return std::nullopt;
             }
             if (width <= 0 || height <= 0 || (bytespp != GRAYSCALE && bytespp != RGB && bytespp != RGBA))
             {
                 tga_file.close();
                 std::cerr << "Bad bpp (or width/height) value." << std::endl;
-                return false;
+                return std::nullopt;
             }
             char *color_map = nullptr;
             if (has_color_map)
@@ -139,13 +142,13 @@ namespace Rasterizer
             {
                 flip_x();
             }
-            if (!header.image_descriptor & 0x10)
+            if (!(header.image_descriptor & 0x10))
             { 
                 // 本来应该有这个bit才上下颠倒的，但读出来的buffer本来就是上下颠倒的，所以这么写
                 flip_y();
             }
 
-            return true;
+            return *this;
         }
 
         void print_pixel()

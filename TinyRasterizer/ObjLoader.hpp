@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <optional>
 #include "VectorN.hpp"
 #include "Mesh.hpp"
 
@@ -24,14 +25,15 @@ namespace Rasterizer
             face_tex.clear();
         }
 
-        Mesh load(const char *filename)
+        std::optional<Mesh> load(const std::string &file_basename)
         {
             clear();
-            std::ifstream obj_file(filename);
+            std::string obj_filename = file_basename + ".obj";
+            std::ifstream obj_file(obj_filename);
             if (!obj_file.is_open())
             {
-                std::cout << "Cannot open this file: " << filename << std::endl;
-                return Mesh();
+                std::cout << "Cannot open this file: " << obj_filename << std::endl;
+                return std::nullopt;
             }
             std::string line;
             while (!obj_file.eof())
@@ -52,7 +54,10 @@ namespace Rasterizer
                     load_texture(line_stream);
                 }
             }
+#if DEBUG == 1
             std::cout << "verticess num: " << vertices.size() << ", face num: " << faces.size() << ", texture num: " << texture.size() << ", face_tex num: " << face_tex.size() << std::endl;
+#endif      
+            std::string tga_filename = file_basename + ".tga";
             return Mesh(vertices, texture, faces, face_tex);
         }
 
