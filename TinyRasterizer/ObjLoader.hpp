@@ -16,6 +16,7 @@ namespace Rasterizer
     public:
         std::vector<Vector3D> vertices, texture;
         std::vector<std::vector<int>> faces, face_tex;
+        TgaImage texture_pic;
 
         void clear()
         {
@@ -56,9 +57,17 @@ namespace Rasterizer
             }
 #if DEBUG == 1
             std::cout << "verticess num: " << vertices.size() << ", face num: " << faces.size() << ", texture num: " << texture.size() << ", face_tex num: " << face_tex.size() << std::endl;
-#endif      
+#endif
             std::string tga_filename = file_basename + ".tga";
-            return Mesh(vertices, texture, faces, face_tex);
+            std::optional<TgaImage> has_texture = texture_pic.load(tga_filename);
+            if (has_texture)
+            {
+                return Mesh(vertices, texture, has_texture->buffer, faces, face_tex, has_texture->width, has_texture->height);
+            }
+            else
+            {
+                return Mesh(vertices, texture, faces, face_tex);
+            }
         }
 
     private:

@@ -9,10 +9,15 @@ namespace Rasterizer
     public:
         std::vector<Vector3D> vertices, texture, pic;
         std::vector<std::vector<int>> faces, face_tex;
+        int width, height;
 
         Mesh() : vertices(), texture(), faces(), face_tex() {}
+        Mesh(std::vector<Vector3D> &vs, std::vector<Vector3D> &tex, std::vector<Vector3D> &pi, std::vector<std::vector<int>> &fs, std::vector<std::vector<int>> &f_t, const int &wid, const int &hei)
+            : vertices(vs), texture(tex), pic(pi), faces(fs), face_tex(f_t), width(wid), height(hei)
+        {
+        }
         Mesh(std::vector<Vector3D> &vs, std::vector<Vector3D> &tex, std::vector<std::vector<int>> &fs, std::vector<std::vector<int>> &f_t)
-            : vertices(vs), texture(tex), faces(fs), face_tex(f_t)
+            : vertices(vs), texture(tex), pic(), faces(fs), face_tex(f_t), width(), height()
         {
         }
         int vert_num() { return (int)vertices.size(); }

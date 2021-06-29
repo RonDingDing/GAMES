@@ -41,13 +41,10 @@ int main(int argc, char **argv)
     // PicConvert con = {buf};
     // con.draw_ppm_to("output");
     ObjectLoader loader;
-    std::optional<Mesh> mesh_p = loader.load("head.obj");
-    TgaImage tgaimage;
-    std::optional<TgaImage> image_p = tgaimage.load("head.tga");
-    if (mesh_p && image_p)
+    std::optional<Mesh> mesh_p = loader.load("head");
+    if (mesh_p)
     {
         Mesh mesh = *mesh_p;
-        TgaImage texture = *image_p;
     }
     // buf.set_mesh_filled_gray(mesh, Vector3D(0, 0, 1));
     // buf.set_mesh_with_uv(mesh);
