@@ -242,6 +242,77 @@ namespace Rasterizer
             }
         }
 
+        void draw_triangle_3D_uv(const Triangle3D &tri)
+        {
+            // 画一个显示UV值的3D三角形
+            // 包围盒
+            std::vector<Number> max_vec = tri.maximum();
+            std::vector<Number> min_vec = tri.minimum();
+            int x_max = std::min((int)max_vec[0], height - 1);
+            int y_max = std::min((int)max_vec[1], height - 1);
+            int x_min = std::max((int)min_vec[0], 0);
+            int y_min = std::max((int)min_vec[1], 0);
+            // 遍历包围盒
+            Vector3D p;
+            for (p.x = x_min; p.x <= x_max; p.x++)
+            {
+                for (p.y = y_min; p.y <= y_max; p.y++)
+                {
+                    Vector3D bc_screen = tri.barycentric(p);
+                    // 重心在三角形外不渲染
+                    if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+                    {
+                        continue;
+                    }
+                    p.z = tri.a.z * bc_screen.x + tri.b.z * bc_screen.y + tri.c.z * bc_screen.z;
+                    if (get_depth_value(p.x, p.y) < p.z)
+                    {
+                        set_depth_value(p.x, p.y, p.z);
+                        double color_x = tri.a_color_pos.x * bc_screen.x + tri.b_color_pos.x * bc_screen.y + tri.c_color_pos.x * bc_screen.z;
+                        double color_y = tri.a_color_pos.y * bc_screen.x + tri.b_color_pos.y * bc_screen.y + tri.c_color_pos.y * bc_screen.z;
+                        set_pixel_color(p.x, p.y, {color_x * 255., color_y * 255., 0});
+                    }
+                }
+            }
+        }
+
+        void draw_triangle_3D_textured(const Triangle3D &tri, Mesh &mesh)
+        {
+            // 画一个涂满颜色的3D三角形
+            // 包围盒
+            std::vector<Number> max_vec = tri.maximum();
+            std::vector<Number> min_vec = tri.minimum();
+            int x_max = std::min((int)max_vec[0], height - 1);
+            int y_max = std::min((int)max_vec[1], height - 1);
+            int x_min = std::max((int)min_vec[0], 0);
+            int y_min = std::max((int)min_vec[1], 0);
+            // 遍历包围盒
+            Vector3D p;
+            for (p.x = x_min; p.x <= x_max; p.x++)
+            {
+                for (p.y = y_min; p.y <= y_max; p.y++)
+                {
+                    Vector3D bc_screen = tri.barycentric(p);
+                    // 重心在三角形外不渲染
+                    if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+                    {
+                        continue;
+                    }
+                    p.z = tri.a.z * bc_screen.x + tri.b.z * bc_screen.y + tri.c.z * bc_screen.z;
+                    if (get_depth_value(p.x, p.y) < p.z)
+                    {
+                        set_depth_value(p.x, p.y, p.z);
+                        double color_x = (tri.a_color_pos.x * bc_screen.x + tri.b_color_pos.x * bc_screen.y + tri.c_color_pos.x * bc_screen.z) * mesh.pic_width;
+                        double color_y = (tri.a_color_pos.y * bc_screen.x + tri.b_color_pos.y * bc_screen.y + tri.c_color_pos.y * bc_screen.z) * mesh.pic_height;
+                        int pos_x = color_x - (int)color_x >= 0.5 ? (int)(color_x) + 1 : (int)color_x;
+                        int pos_y = color_y - (int)color_y >= 0.5 ? (int)(color_y) + 1 : (int)color_y;
+                        Vector3D color = mesh.get_texture_pic_color(color_x, color_y);
+                        set_pixel_color(p.x, p.y, color);
+                    }
+                }
+            }
+        }
+
         void draw_triangle_2D_filled(const Triangle2I &tri, const Vector3D &color)
         {
             // 画一个涂满颜色的2D三角形
@@ -336,19 +407,35 @@ namespace Rasterizer
                 std::vector<int> face = mesh.faces[i];
                 Vector3D screen_coords[3];
                 Vector3D world_coords[3];
+                Vector3D uvw[3];
                 for (int j = 0; j < 3; j++)
                 {
                     world_coords[j] = mesh.vertices[face[j]];
                     screen_coords[j] = world_to_screen(world_coords[j]);
+                    uvw[j] = mesh.texture[mesh.face_tex[i][j]];
                 }
-                Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2]);
-                std::vector<int> face_indices = mesh.face_tex[i];
-                Vector3D uvw;
-                for (int k = 0; k < 3; k++)
+                Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2], uvw[0], uvw[1], uvw[2]);
+                draw_triangle_3D_uv(tri);
+            }
+        }
+
+        void set_mesh_textured(Mesh &mesh)
+        {
+            // 将模型的每个面都涂上Texture的颜色
+            for (int i = 0; i < mesh.face_num(); i++)
+            {
+                std::vector<int> face = mesh.faces[i];
+                Vector3D screen_coords[3];
+                Vector3D world_coords[3];
+                Vector3D color_pos[3];
+                for (int j = 0; j < 3; j++)
                 {
-                    uvw[k] = (Number)(mesh.texture[mesh.face_tex[i][k]][k]);
+                    world_coords[j] = mesh.vertices[face[j]];
+                    screen_coords[j] = world_to_screen(world_coords[j]);
+                    color_pos[j] = mesh.texture[mesh.face_tex[i][j]];
                 }
-                draw_triangle_3D_filled(tri, uvw * 255);
+                Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2], color_pos[0], color_pos[1], color_pos[2]);
+                draw_triangle_3D_textured(tri, mesh);
             }
         }
 

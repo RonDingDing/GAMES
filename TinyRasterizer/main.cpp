@@ -33,7 +33,7 @@ void print_color(const Vector3D &color)
 
 int main(int argc, char **argv)
 {
-    // Buffers buf = {1000, 1000};
+    Buffers buf = {1000, 1000};
     // buf.draw_line(Vector2D(1, 11), Vector2D(100, 800), red);
     // buf.draw_line(Vector2D(100, 800), Vector2D(500, 300), green);
     // buf.draw_line(Vector2D(500, 300), Vector2D(1, 11), white);
@@ -45,6 +45,9 @@ int main(int argc, char **argv)
     if (mesh_p)
     {
         Mesh mesh = *mesh_p;
+        buf.set_mesh_with_uv(mesh);
+        PpmImage con = PpmImage(buf);
+        con.draw_to("output");
     }
     // buf.set_mesh_filled_gray(mesh, Vector3D(0, 0, 1));
     // buf.set_mesh_with_uv(mesh);
@@ -57,8 +60,7 @@ int main(int argc, char **argv)
     // std::string name;
     // std::cout << "Enter file name:";
     // std::cin >> name;
-    
-    
+
     // if (tgaimage.load("head.tga"))
     // {
 
