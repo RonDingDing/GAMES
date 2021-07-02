@@ -243,6 +243,8 @@ namespace Rasterizer
     class Mat
     {
         VectorN<dimension_column, Number> rows[dimension_row];
+        Size pointer_row = 0;
+        Size pointer_col = 0;
 
     public:
         Mat() {}
@@ -348,6 +350,28 @@ namespace Rasterizer
                 ret[i] = this->col(i);
             }
             return ret;
+        }
+
+        void reset_pointer()
+        {
+            pointer_col = 0;
+            pointer_row = 0;
+        }
+
+        Mat<dimension_column, dimension_row, Number> &operator<<(const Number &k)
+        {
+            (*this)[pointer_row][pointer_col] = k;
+            pointer_col++;
+            if (pointer_col == dimension_row)
+            {
+                pointer_row++;
+                pointer_col = 0;
+                if (pointer_row == dimension_column)
+                {
+                    pointer_row = 0;
+                }
+            }
+            return *this;
         }
     };
 

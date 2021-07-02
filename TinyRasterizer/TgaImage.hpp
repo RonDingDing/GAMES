@@ -72,11 +72,16 @@ namespace Rasterizer
             }
 
             int file_size = read_size(tga_file);
+            if (file_size)
+                ; // 凑数，不发出警告
             int version = read_version(tga_file);
+            if (version)
+                ; // 凑数，不发出警告
+
             TgaHeader header;
             read_header(tga_file, header);
 
-        #if DEBUG == 1
+#if DEBUG == 1
             std::cout << "File size: " << file_size << std::endl;
             std::cout << "TGA version: " << version << std::endl;
             std::cout << "ID LENGTH: " << (int)header.id_length << std::endl;
@@ -88,8 +93,8 @@ namespace Rasterizer
             std::cout << "ORIGIN: " << header.x_offset << "," << header.y_offset << std::endl;
             std::cout << "SIZE: " << header.width << "," << header.height << ":" << (int)header.pixel_depth << std::endl;
             std::cout << "DESCRIPTOR: " << (int)header.image_descriptor << std::endl;
-        #endif
-        
+#endif
+
             width = header.width;
             height = header.height;
             bytespp = header.pixel_depth >> 3; // 即/8
@@ -143,7 +148,7 @@ namespace Rasterizer
                 flip_x();
             }
             if (!(header.image_descriptor & 0x10))
-            { 
+            {
                 // 本来应该有这个bit才上下颠倒的，但读出来的buffer本来就是上下颠倒的，所以这么写
                 flip_y();
             }

@@ -270,7 +270,7 @@ namespace Rasterizer
                         set_depth_value(p.x, p.y, p.z);
                         double color_x = tri.a_color_pos.x * bc_screen.x + tri.b_color_pos.x * bc_screen.y + tri.c_color_pos.x * bc_screen.z;
                         double color_y = tri.a_color_pos.y * bc_screen.x + tri.b_color_pos.y * bc_screen.y + tri.c_color_pos.y * bc_screen.z;
-                        set_pixel_color(p.x, p.y, {color_x * 255., color_y * 255., 0});
+                        set_pixel_color(p.x, p.y, {color_x * 255.0, color_y * 255.0, 0});
                     }
                 }
             }
@@ -306,7 +306,7 @@ namespace Rasterizer
                         double color_y = (tri.a_color_pos.y * bc_screen.x + tri.b_color_pos.y * bc_screen.y + tri.c_color_pos.y * bc_screen.z) * mesh.pic_height;
                         int pos_x = color_x - (int)color_x >= 0.5 ? (int)(color_x) + 1 : (int)color_x;
                         int pos_y = color_y - (int)color_y >= 0.5 ? (int)(color_y) + 1 : (int)color_y;
-                        Vector3D color = mesh.get_texture_pic_color(color_x, color_y);
+                        Vector3D color = mesh.get_texture_pic_color(pos_x, pos_y);
                         set_pixel_color(p.x, p.y, color);
                     }
                 }
@@ -428,14 +428,29 @@ namespace Rasterizer
                 Vector3D screen_coords[3];
                 Vector3D world_coords[3];
                 Vector3D color_pos[3];
+                bool has_texture = false;
                 for (int j = 0; j < 3; j++)
                 {
                     world_coords[j] = mesh.vertices[face[j]];
                     screen_coords[j] = world_to_screen(world_coords[j]);
-                    color_pos[j] = mesh.texture[mesh.face_tex[i][j]];
+                    std::cout << mesh.face_tex[i][j] << std::endl;
+                    if (!mesh.texture.empty())
+                    {
+                        color_pos[j] = mesh.texture[mesh.face_tex[i][j]];
+                        has_texture = true;
+                    }
                 }
-                Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2], color_pos[0], color_pos[1], color_pos[2]);
-                draw_triangle_3D_textured(tri, mesh);
+                if (has_texture)
+                {
+                    Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2], color_pos[0], color_pos[1], color_pos[2]);
+                    draw_triangle_3D_textured(tri, mesh);
+                }
+                else
+                {
+                    Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2]);
+                    Vector3D color(rand() % 255, rand() % 255, rand() % 255);
+                    draw_triangle_3D_filled(tri, color);
+                }
             }
         }
 

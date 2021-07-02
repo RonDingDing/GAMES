@@ -41,11 +41,11 @@ int main(int argc, char **argv)
     // PicConvert con = {buf};
     // con.draw_ppm_to("output");
     ObjectLoader loader;
-    std::optional<Mesh> mesh_p = loader.load("head");
+    std::optional<Mesh> mesh_p = loader.load("cube");
     if (mesh_p)
     {
         Mesh mesh = *mesh_p;
-        buf.set_mesh_with_uv(mesh);
+        buf.set_mesh_textured(mesh);
         PpmImage con = PpmImage(buf);
         con.draw_to("output");
     }
@@ -76,5 +76,13 @@ int main(int argc, char **argv)
     //     PpmImage con = PpmImage(tgaimage);
     //     con.draw_to("output");
     // }
-    std::cout << std::endl;
+
+    // Matrix4D a = Matrix4D();
+    // a.reset_pointer();
+    // a << 1.0 << 2.0 << 3.0 << 4.0
+    //   << 5.0 << 6.0 << 7.0 << 8.0
+    //   << 9.0 << 10.0 << 11.0 << 12.0
+    //   << 13.0 << 14.0 << 15.0 << 16.0
+    //   << 17.0 << 18.0 << 19.0 << 20.0;
+    // std::cout << a << std::endl;
 }
