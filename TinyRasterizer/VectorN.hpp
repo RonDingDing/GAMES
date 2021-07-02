@@ -119,7 +119,7 @@ namespace Rasterizer
             return VectorN<3, Number>(x, y, z) * (l / norm());
         }
 
-        VectorN<3, Number> operator^(const VectorN<3, Number> &v2)
+        VectorN<3, Number> operator^(const VectorN<3, Number> &v2) const
         {
             return VectorN<3, Number>(y * v2.z - z * v2.y, z * v2.x - x * v2.z, x * v2.y - y * v2.x);
         }
@@ -417,7 +417,7 @@ namespace Rasterizer
     {
         for (Size i = 0; i < dimension_row; i++)
         {
-            out << m[i] << std::endl;
+            out << m[i] << "\t" << std::endl;
         }
         return out;
     }
