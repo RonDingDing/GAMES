@@ -7,7 +7,8 @@ namespace Rasterizer
     class Mesh
     {
     public:
-        std::vector<Vector3D> vertices, texture, pic;
+        std::vector<Vector3D> vertices, texture, pic, norms;
+        std::vector<Vector2D> uv;
         std::vector<std::vector<int>> faces, face_tex;
         int pic_width, pic_height;
 

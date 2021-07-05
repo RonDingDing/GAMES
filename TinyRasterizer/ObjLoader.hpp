@@ -46,6 +46,10 @@ namespace Rasterizer
                 {
                     load_vertices(line_stream);
                 }
+                else if (!line.compare(0, 3, "vn "))
+                {
+                    load_normal(line_stream);
+                }
                 else if (!line.compare(0, 2, "f "))
                 {
                     load_faces(line_stream);
