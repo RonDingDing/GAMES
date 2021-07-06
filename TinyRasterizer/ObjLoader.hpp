@@ -14,7 +14,7 @@ namespace Rasterizer
     class ObjectLoader
     {
     public:
-        std::vector<Vector3D> vertices, texture;
+        std::vector<Vector3D> vertices, texture, norms;
         std::vector<std::vector<int>> faces, face_tex;
         TgaImage texture_pic;
 
@@ -24,6 +24,7 @@ namespace Rasterizer
             texture.clear();
             faces.clear();
             face_tex.clear();
+            norms.clear();
         }
 
         std::optional<Mesh> load(const std::string &file_basename)
@@ -66,15 +67,26 @@ namespace Rasterizer
             std::optional<TgaImage> has_texture = texture_pic.load(tga_filename);
             if (has_texture)
             {
-                return Mesh(vertices, texture, has_texture->buffer, faces, face_tex, has_texture->width, has_texture->height);
+                return Mesh(vertices, texture, has_texture->buffer, norms, faces, face_tex, has_texture->width, has_texture->height);
             }
             else
             {
-                return Mesh(vertices, texture, faces, face_tex);
+                return Mesh(vertices, texture, norms, faces, face_tex);
             }
         }
 
     private:
+        void load_normal(std::istringstream &line_stream)
+        {
+            char ctrash = 0;
+            line_stream >> ctrash >> ctrash;
+            Vector3D n;
+            line_stream >> n.x;
+            line_stream >> n.y;
+            line_stream >> n.z;
+            norms.push_back(n);
+        }
+
         void load_texture(std::istringstream &line_stream)
         {
             char ctrash = 0;
@@ -85,8 +97,21 @@ namespace Rasterizer
             }
         }
 
+        void calculate_normal(const std::vector<int> &one_face)
+        {
+            norms.reserve(vertices.size());
+            Vector3D a = vertices[one_face[0]] - vertices[one_face[1]];
+            Vector3D b = vertices[one_face[2]] - vertices[one_face[1]];
+            Vector3D normal = a ^ b;
+            for (size_t n = 0; n < one_face.size(); n++)
+            {
+                norms[one_face[n]] = normal;
+            }
+        }
+
         void load_faces(std::istringstream &line_stream)
         {
+
             std::vector<int> one_face, one_face_tex;
             int p1 = 0, p2 = 0, p3 = 0;
             char ctrash = 0;
@@ -98,8 +123,10 @@ namespace Rasterizer
                 one_face.emplace_back(std::stoi(subline2) - 1);
                 one_face.emplace_back(std::stoi(subline3) - 1);
                 faces.emplace_back(one_face);
+                // P 没有法线，补上
+                calculate_normal(one_face);
             }
-            else if (subline1.find("//") != std::string::npos)
+            else if (subline1.find("//") != std::string::npos) // P//N
             {
                 std::istringstream sub1(subline1.c_str());
                 std::istringstream sub2(subline2.c_str());
@@ -138,6 +165,12 @@ namespace Rasterizer
                 one_face_tex.emplace_back(t2 - 1);
                 one_face_tex.emplace_back(t3 - 1);
                 face_tex.emplace_back(one_face_tex);
+
+                if (n1 == n2 && n2 == n3 && n3 == 0)
+                {
+                    // P/T 没有法线，补上
+                    calculate_normal(one_face);
+                }
             }
         }
 

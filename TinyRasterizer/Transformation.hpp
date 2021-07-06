@@ -20,8 +20,8 @@ namespace Rasterizer
             m << w / 2.0 << 0.0 << 0.0 << x + w / 2.0
               << 0.0 << h / 2.0 << 0.0 << y + h / 2.0
               << 0.0 << 0.0 << depth / 2.0 << depth / 2.0
-              << 0.0 << 0.0 << 0.0 << 1.0;
-            m.reset_pointer();
+              << 0.0 << 0.0 << 0.0 << 1.0 
+              || 0;
             return m;
         }
 
@@ -35,16 +35,18 @@ namespace Rasterizer
             min_v << x.x << y.x << z.x << 0.0
                   << x.y << y.y << z.y << 0.0
                   << x.z << y.z << z.z << 0.0
-                  << 0.0 << 0.0 << 0.0 << 1.0;
-            min_v.reset_pointer();
+                  << 0.0 << 0.0 << 0.0 << 1.0 
+                  || 0;
 
             Matrix4D tr;
             tr << 1.0 << 0.0 << 0.0 << 0.0
                << 0.0 << 1.0 << 0.0 << 0.0
                << 0.0 << 0.0 << 1.0 << 0.0
-               << -center.x << -center.y << -center.z << 1.0;
-            tr.reset_pointer();
-            return min_v * tr;
+               << -center.x << -center.y << -center.z << 1.0 
+               || 0;
+
+            Matrix4D result = min_v * tr;
+            return result;
         }
 
         static Matrix4D &project(const Vector3D &eye, const Vector3D &center)
@@ -53,8 +55,8 @@ namespace Rasterizer
             m << 1.0 << 0.0 << 0.0 << 0.0
               << 0.0 << 1.0 << 0.0 << 0.0
               << 0.0 << 0.0 << 1.0 << -1.f / (eye - center).norm()
-              << 0.0 << 0.0 << 0.0 << 1.0;
-            m.reset_pointer();
+              << 0.0 << 0.0 << 0.0 << 1.0 
+              || 0;
             return m;
         }
     };

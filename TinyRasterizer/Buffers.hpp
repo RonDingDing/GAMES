@@ -433,7 +433,6 @@ namespace Rasterizer
                 {
                     world_coords[j] = mesh.vertices[face[j]];
                     screen_coords[j] = world_to_screen(world_coords[j]);
-                    std::cout << mesh.face_tex[i][j] << std::endl;
                     if (!mesh.texture.empty())
                     {
                         color_pos[j] = mesh.texture[mesh.face_tex[i][j]];

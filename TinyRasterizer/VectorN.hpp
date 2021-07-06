@@ -352,10 +352,10 @@ namespace Rasterizer
             return ret;
         }
 
-        void reset_pointer()
+        Mat<dimension_column, dimension_row, Number> &operator||(const Number &p)
         {
-            pointer_col = 0;
-            pointer_row = 0;
+            pointer_col = p;
+            pointer_row = p;
         }
 
         Mat<dimension_column, dimension_row, Number> &operator<<(const Number &k)

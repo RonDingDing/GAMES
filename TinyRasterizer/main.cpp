@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     // PicConvert con = {buf};
     // con.draw_ppm_to("output");
     ObjectLoader loader;
-    std::optional<Mesh> mesh_p = loader.load("cube");
+    std::optional<Mesh> mesh_p = loader.load("head");
     if (mesh_p)
     {
         Mesh mesh = *mesh_p;
@@ -84,5 +84,5 @@ int main(int argc, char **argv)
     //   << 9.0 << 10.0 << 11.0 << 12.0
     //   << 13.0 << 14.0 << 15.0 << 16.0
     //   << 17.0 << 18.0 << 19.0 << 20.0;
-    // std::cout << a << std::endl;
+    //  << a << std::endl;
 }

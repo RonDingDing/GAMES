@@ -21,7 +21,7 @@ namespace Rasterizer
 
         PpmImage(const TgaImage &tga) : width(tga.width), height(tga.height), buffer(tga.buffer)
         {
-            std::cout << tga.buffer.size() <<"   "<< tga.width * tga.height << std::endl;
+            // std::cout << tga.buffer.size() <<"   "<< tga.width * tga.height << std::endl;
         }
 
         void draw_to(const std::string &filename)
