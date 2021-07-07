@@ -268,8 +268,8 @@ namespace Rasterizer
                     if (get_depth_value(p.x, p.y) < p.z)
                     {
                         set_depth_value(p.x, p.y, p.z);
-                        double color_x = tri.a_color_pos.x * bc_screen.x + tri.b_color_pos.x * bc_screen.y + tri.c_color_pos.x * bc_screen.z;
-                        double color_y = tri.a_color_pos.y * bc_screen.x + tri.b_color_pos.y * bc_screen.y + tri.c_color_pos.y * bc_screen.z;
+                        Number color_x = tri.a_color_pos.x * bc_screen.x + tri.b_color_pos.x * bc_screen.y + tri.c_color_pos.x * bc_screen.z;
+                        Number color_y = tri.a_color_pos.y * bc_screen.x + tri.b_color_pos.y * bc_screen.y + tri.c_color_pos.y * bc_screen.z;
                         set_pixel_color(p.x, p.y, {color_x * 255.0, color_y * 255.0, 0});
                     }
                 }
@@ -302,12 +302,50 @@ namespace Rasterizer
                     if (get_depth_value(p.x, p.y) < p.z)
                     {
                         set_depth_value(p.x, p.y, p.z);
-                        double color_x = (tri.a_color_pos.x * bc_screen.x + tri.b_color_pos.x * bc_screen.y + tri.c_color_pos.x * bc_screen.z) * mesh.pic_width;
-                        double color_y = (tri.a_color_pos.y * bc_screen.x + tri.b_color_pos.y * bc_screen.y + tri.c_color_pos.y * bc_screen.z) * mesh.pic_height;
+                        Number color_x = (tri.a_color_pos.x * bc_screen.x + tri.b_color_pos.x * bc_screen.y + tri.c_color_pos.x * bc_screen.z) * mesh.pic_width;
+                        Number color_y = (tri.a_color_pos.y * bc_screen.x + tri.b_color_pos.y * bc_screen.y + tri.c_color_pos.y * bc_screen.z) * mesh.pic_height;
                         int pos_x = color_x - (int)color_x >= 0.5 ? (int)(color_x) + 1 : (int)color_x;
                         int pos_y = color_y - (int)color_y >= 0.5 ? (int)(color_y) + 1 : (int)color_y;
                         Vector3D color = mesh.get_texture_pic_color(pos_x, pos_y);
                         set_pixel_color(p.x, p.y, color);
+                    }
+                }
+            }
+        }
+
+        void draw_triangle_3D_gouraud_shaded(const Triangle3D &tri, const Vector3D &light_dir, const Vector3D &color)
+        {
+            // 画一个涂满颜色的3D三角形
+            // 包围盒
+            std::vector<Number> max_vec = tri.maximum();
+            std::vector<Number> min_vec = tri.minimum();
+            int x_max = std::min((int)max_vec[0], height - 1);
+            int y_max = std::min((int)max_vec[1], height - 1);
+            int x_min = std::max((int)min_vec[0], 0);
+            int y_min = std::max((int)min_vec[1], 0);
+            // 遍历包围盒
+            Vector3D p;
+            for (p.x = x_min; p.x <= x_max; p.x++)
+            {
+                for (p.y = y_min; p.y <= y_max; p.y++)
+                {
+                    Vector3D bc_screen = tri.barycentric(p);
+                    // 重心在三角形外不渲染
+                    if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+                    {
+                        continue;
+                    }
+                    p.z = tri.a.z * bc_screen.x + tri.b.z * bc_screen.y + tri.c.z * bc_screen.z;
+                    if (get_depth_value(p.x, p.y) < p.z)
+                    {
+                        set_depth_value(p.x, p.y, p.z);
+                        Number normal_x = (tri.a_normal.x * bc_screen.x + tri.b_normal.x * bc_screen.y + tri.c_normal.x * bc_screen.z);
+                        Number normal_y = (tri.a_normal.y * bc_screen.x + tri.b_normal.y * bc_screen.y + tri.c_normal.y * bc_screen.z);
+                        Number normal_z = (tri.a_normal.z * bc_screen.x + tri.b_normal.z * bc_screen.y + tri.c_normal.z * bc_screen.z);
+                        Vector3D normal = Vector3D(normal_x, normal_y, normal_z);
+                        Number intensity = normal * light_dir;
+                        Vector3D color2(intensity * color.x, intensity * color.y, intensity * color.z);
+                        set_pixel_color(p.x, p.y, color2);
                     }
                 }
             }
@@ -393,7 +431,7 @@ namespace Rasterizer
                 }
                 Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2]);
                 Vector3D normal = Triangle3D(world_coords[0], world_coords[1], world_coords[2]).normal;
-                double intensity = normal * light_dir;
+                Number intensity = normal * light_dir;
                 Vector3D color(intensity * 255, intensity * 255, intensity * 255);
                 draw_triangle_3D_filled(tri, color);
             }
@@ -453,22 +491,28 @@ namespace Rasterizer
             }
         }
 
-        void set_mesh_grouraud_shaded(Mesh &mesh, const Matrix4D4 &transformation, const Vector3D &light_dir)
+        void set_mesh_gouraud_shaded(Mesh &mesh, const Matrix4D4 &view, const Matrix4D4 &proj, const Matrix4D4 &mod, const Vector3D &light_dir)
         {
             for (int i = 0; i < mesh.face_num(); i++)
             {
                 std::vector<int> face = mesh.faces[i];
                 Vector3D screen_coords[3];
                 Vector3D world_coords[3];
+                Vector3D color_pos[3];
+                Vector3D normals[3];
                 Number intensity[3];
                 for (int j = 0; j < 3; j++)
                 {
                     Vector3D v = mesh.vertices[face[j]];
-                    screen_coords[j] = Vector3D(transformation * Matrix4D1(v));
+                    screen_coords[j] = Vector3D(view * proj * mod * Matrix4D1(v));
                     world_coords[j] = v;
-                    intensity[j] = mesh.norms[mesh.face_tex[i][j]] * light_dir.normalized();
+                    color_pos[j] = mesh.texture[mesh.face_tex[i][j]];
+                    normals[j] = mesh.norms[mesh.face_tex[i][j]];
                 }
-                // TODO 
+                Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2], color_pos[0], color_pos[1], color_pos[2], normals[0], normals[1], normals[2]);
+                Vector3D color(255, 255, 255);
+                draw_triangle_3D_gouraud_shaded(tri, light_dir, color);
+                // TODO
             }
         }
 
@@ -489,7 +533,7 @@ namespace Rasterizer
                 }
                 Vector3D normal = Triangle3D(world_coords[0], world_coords[1], world_coords[2]).normal.normalized();
                 Triangle2I tri(screen_coords[0], screen_coords[1], screen_coords[2]);
-                double intensity = normal * light_dir;
+                Number intensity = normal * light_dir;
                 if (intensity > 0)
                 {
                     // 默认光照是白色

@@ -10,14 +10,21 @@ namespace Rasterizer
     public:
         Vector3D a = Vector3D(0), b = Vector3D(0), c = Vector3D(0), normal = Vector3D(0), ab = Vector3D(0), bc = Vector3D(0), ca = Vector3D(0);
         Vector3D a_color_pos = Vector3D(0), b_color_pos = Vector3D(0), c_color_pos = Vector3D(0);
+        Vector3D a_normal = Vector3D(0), b_normal = Vector3D(0), c_normal = Vector3D(0);
         Triangle3D(const Vector3D &a1, const Vector3D &b2, const Vector3D &c3)
             : a(a1), b(b2), c(c3), ab(b2 - a1), bc(c3 - b2), ca(a1 - c3), a_color_pos(0), b_color_pos(0), c_color_pos(0)
         {
             normal = (ab ^ bc).normalized();
         }
 
-        Triangle3D(const Vector3D &a1, const Vector3D &b2, const Vector3D &c3, const Vector3D &a_pos, const Vector3D &b_pos, const Vector3D &c_pos)
-            : a(a1), b(b2), c(c3), ab(b2 - a1), bc(c3 - b2), ca(a1 - c3), a_color_pos(a_pos), b_color_pos(b_pos), c_color_pos(c_pos)
+        Triangle3D(const Vector3D &a1, const Vector3D &b2, const Vector3D &c3, const Vector3D &a_pos_color, const Vector3D &b_pos_color, const Vector3D &c_pos_color)
+            : a(a1), b(b2), c(c3), ab(b2 - a1), bc(c3 - b2), ca(a1 - c3), a_color_pos(a_pos_color), b_color_pos(b_pos_color), c_color_pos(c_pos_color)
+        {
+            normal = (ab ^ bc).normalized();
+        }
+
+        Triangle3D(const Vector3D &a1, const Vector3D &b2, const Vector3D &c3, const Vector3D &a_pos_color, const Vector3D &b_pos_color, const Vector3D &c_pos_color, const Vector3D &a_norm, const Vector3D &b_norm, const Vector3D &c_norm)
+            : a(a1), b(b2), c(c3), ab(b2 - a1), bc(c3 - b2), ca(a1 - c3), a_color_pos(a_pos_color), b_color_pos(b_pos_color), c_color_pos(c_pos_color), a_normal(a_norm), b_normal(b_norm), c_normal(c_norm)
         {
             normal = (ab ^ bc).normalized();
         }

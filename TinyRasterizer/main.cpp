@@ -8,6 +8,7 @@
 #include "TgaImage.hpp"
 #include "ObjLoader.hpp"
 #include "Transformation.hpp"
+#include "geometry.cpp"
 
 using namespace Rasterizer;
 
@@ -56,8 +57,11 @@ int main(int argc, char **argv)
         Mesh mesh = *mesh_p;
         // buf.set_mesh_textured(mesh);
 
-        Matrix4D4 transformation = Transformation::get_matrix(x, y, w, h, depth, eye, center, up);
-        buf.set_mesh_grouraud_shaded(mesh, transformation, light_dir);
+        // Matrix4D4 transformation = Transformation::get_matrix(x, y, w, h, depth, eye, center, up);
+        Matrix4D4 viewport = Transformation::viewport(x, y, w, h, depth);
+        Matrix4D4 lookat = Transformation::lookat(eye, center, up);
+        Matrix4D4 project = Transformation::project(eye, center);
+        buf.set_mesh_gouraud_shaded(mesh, viewport, project, lookat, light_dir);
         // buf.set_mesh_filled_gray(mesh, light_dir);
         PpmImage con = PpmImage(buf);
         con.draw_to("output");
@@ -102,9 +106,7 @@ int main(int argc, char **argv)
 
 // int main(int argc, char **argv)
 // {
-//     Vector3D a = {4, 5, 6};
-//     Matrix4D1 b = {a};
-//     Vector3D c = {b};
-//     std::cout << b << std::endl;
-//     std::cout << c << std::endl;
+//     Matrix4D4 a = Matrix4D4::identity();
+//     a[3][2] = 5;
+//     std::cout << a << std::endl;
 // }
