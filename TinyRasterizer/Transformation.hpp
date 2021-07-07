@@ -22,7 +22,6 @@ namespace Rasterizer
               << 0.0 << 0.0 << depth / 2.0 << depth / 2.0
               << 0.0 << 0.0 << 0.0 << 1.0 ||
                 0;
-            std::cout << m;
             return m;
         }
 

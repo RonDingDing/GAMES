@@ -313,7 +313,7 @@ namespace Rasterizer
             }
         }
 
-        void draw_triangle_3D_gouraud_shaded(const Triangle3D &tri, const Vector3D &light_dir, const Vector3D &color)
+        void draw_triangle_3D_gouraud_shaded(const Triangle3D &tri, const Vector3D &light_dir, const Vector3D &color, Mesh &mesh)
         {
             // 画一个涂满颜色的3D三角形
             // 包围盒
@@ -323,6 +323,9 @@ namespace Rasterizer
             int y_max = std::min((int)max_vec[1], height - 1);
             int x_min = std::max((int)min_vec[0], 0);
             int y_min = std::max((int)min_vec[1], 0);
+
+            bool has_texture = !mesh.pic.empty();
+
             // 遍历包围盒
             Vector3D p;
             for (p.x = x_min; p.x <= x_max; p.x++)
@@ -342,10 +345,23 @@ namespace Rasterizer
                         Number normal_x = (tri.a_normal.x * bc_screen.x + tri.b_normal.x * bc_screen.y + tri.c_normal.x * bc_screen.z);
                         Number normal_y = (tri.a_normal.y * bc_screen.x + tri.b_normal.y * bc_screen.y + tri.c_normal.y * bc_screen.z);
                         Number normal_z = (tri.a_normal.z * bc_screen.x + tri.b_normal.z * bc_screen.y + tri.c_normal.z * bc_screen.z);
-                        Vector3D normal = Vector3D(normal_x, normal_y, normal_z);
-                        Number intensity = normal * light_dir;
-                        Vector3D color2(intensity * color.x, intensity * color.y, intensity * color.z);
-                        set_pixel_color(p.x, p.y, color2);
+                        if (has_texture)
+                        {
+                            Number color_x = (tri.a_color_pos.x * bc_screen.x + tri.b_color_pos.x * bc_screen.y + tri.c_color_pos.x * bc_screen.z) * mesh.pic_width;
+                            Number color_y = (tri.a_color_pos.y * bc_screen.x + tri.b_color_pos.y * bc_screen.y + tri.c_color_pos.y * bc_screen.z) * mesh.pic_height;
+                            int pos_x = color_x - (int)color_x >= 0.5 ? (int)(color_x) + 1 : (int)color_x;
+                            int pos_y = color_y - (int)color_y >= 0.5 ? (int)(color_y) + 1 : (int)color_y;
+                            Vector3D color1 = mesh.get_texture_pic_color(pos_x, pos_y);
+                            // intensity = normal * light_dir
+                            // color = intensity * color
+                            Vector3D color2 = color1 * (Vector3D(normal_x, normal_y, normal_z).normalized() * (light_dir.normalized()));
+                            set_pixel_color(p.x, p.y, color2);
+                        }
+                        else
+                        {
+                            Vector3D color2 = color * (Vector3D(normal_x, normal_y, normal_z).normalized() * (light_dir.normalized()));
+                            set_pixel_color(p.x, p.y, color2);
+                        }
                     }
                 }
             }
@@ -459,6 +475,7 @@ namespace Rasterizer
 
         void set_mesh_textured(Mesh &mesh)
         {
+            bool has_texture = !mesh.pic.empty();
             // 将模型的每个面都涂上Texture的颜色
             for (int i = 0; i < mesh.face_num(); i++)
             {
@@ -466,15 +483,14 @@ namespace Rasterizer
                 Vector3D screen_coords[3];
                 Vector3D world_coords[3];
                 Vector3D color_pos[3];
-                bool has_texture = false;
+
                 for (int j = 0; j < 3; j++)
                 {
                     world_coords[j] = mesh.vertices[face[j]];
                     screen_coords[j] = world_to_screen(world_coords[j]);
-                    if (!mesh.texture.empty())
+                    if (has_texture)
                     {
                         color_pos[j] = mesh.texture[mesh.face_tex[i][j]];
-                        has_texture = true;
                     }
                 }
                 if (has_texture)
@@ -491,7 +507,7 @@ namespace Rasterizer
             }
         }
 
-        void set_mesh_gouraud_shaded(Mesh &mesh, const Matrix4D4 &view, const Matrix4D4 &proj, const Matrix4D4 &mod, const Vector3D &light_dir)
+        void set_mesh_gouraud_shaded(Mesh &mesh, const Matrix4D4 &view, const Matrix4D4 &proj, const Matrix4D4 &mod, const Vector3D &light_dir, const Vector3D &color)
         {
             for (int i = 0; i < mesh.face_num(); i++)
             {
@@ -500,19 +516,18 @@ namespace Rasterizer
                 Vector3D world_coords[3];
                 Vector3D color_pos[3];
                 Vector3D normals[3];
-                Number intensity[3];
+
                 for (int j = 0; j < 3; j++)
                 {
                     Vector3D v = mesh.vertices[face[j]];
                     screen_coords[j] = Vector3D(view * proj * mod * Matrix4D1(v));
                     world_coords[j] = v;
                     color_pos[j] = mesh.texture[mesh.face_tex[i][j]];
-                    normals[j] = mesh.norms[mesh.face_tex[i][j]];
+                    normals[j] = mesh.norms[face[j]];
                 }
+
                 Triangle3D tri(screen_coords[0], screen_coords[1], screen_coords[2], color_pos[0], color_pos[1], color_pos[2], normals[0], normals[1], normals[2]);
-                Vector3D color(255, 255, 255);
-                draw_triangle_3D_gouraud_shaded(tri, light_dir, color);
-                // TODO
+                draw_triangle_3D_gouraud_shaded(tri, light_dir, color, mesh);
             }
         }
 
