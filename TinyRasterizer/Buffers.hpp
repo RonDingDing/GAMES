@@ -453,6 +453,25 @@ namespace Rasterizer
             }
         }
 
+        void set_mesh_grouraud_shaded(Mesh &mesh, const Matrix4D4 &transformation, const Vector3D &light_dir)
+        {
+            for (int i = 0; i < mesh.face_num(); i++)
+            {
+                std::vector<int> face = mesh.faces[i];
+                Vector3D screen_coords[3];
+                Vector3D world_coords[3];
+                Number intensity[3];
+                for (int j = 0; j < 3; j++)
+                {
+                    Vector3D v = mesh.vertices[face[j]];
+                    screen_coords[j] = Vector3D(transformation * Matrix4D1(v));
+                    world_coords[j] = v;
+                    intensity[j] = mesh.norms[mesh.face_tex[i][j]] * light_dir.normalized();
+                }
+                // TODO 
+            }
+        }
+
         void set_mesh_gray(Mesh &mesh, const Vector3D &light)
         {
             // 假装有一束光照亮他

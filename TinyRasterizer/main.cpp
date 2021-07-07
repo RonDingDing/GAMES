@@ -7,6 +7,7 @@
 #include "PpmImage.hpp"
 #include "TgaImage.hpp"
 #include "ObjLoader.hpp"
+#include "Transformation.hpp"
 
 using namespace Rasterizer;
 
@@ -19,7 +20,7 @@ Vector3D indigo = {0x0, 0xff, 0xff};
 Vector3D purple = {0x8b, 0x0, 0xff};
 Vector3D white = {0xff, 0xff, 0xff};
 
-// void print_color(const Vector3D &color)
+// void print_color(color)
 // {
 //     Buffers buf = {700, 700};
 //     for (int i = 0; i < 700 * 100; i++)
@@ -33,7 +34,10 @@ Vector3D white = {0xff, 0xff, 0xff};
 
 int main(int argc, char **argv)
 {
-    Buffers buf = {1000, 1000};
+    const int width = 800;
+    const int height = 800;
+    const int depth = 255;
+    Buffers buf = {width, height};
     // buf.draw_line(Vector2D(1, 11), Vector2D(100, 800), red);
     // buf.draw_line(Vector2D(100, 800), Vector2D(500, 300), green);
     // buf.draw_line(Vector2D(500, 300), Vector2D(1, 11), white);
@@ -44,8 +48,17 @@ int main(int argc, char **argv)
     std::optional<Mesh> mesh_p = loader.load("head");
     if (mesh_p)
     {
+        const Vector3D eye(1, 1, 3);
+        const Vector3D center(0, 0, 0);
+        const Vector3D up(0, 1, 0);
+        const Vector3D light_dir(1, -1, 1);
+        const int x = width / 8, y = height / 8, w = width * 3 / 4, h = height * 3 / 4;
         Mesh mesh = *mesh_p;
-        buf.set_mesh_textured(mesh);
+        // buf.set_mesh_textured(mesh);
+
+        Matrix4D4 transformation = Transformation::get_matrix(x, y, w, h, depth, eye, center, up);
+        buf.set_mesh_grouraud_shaded(mesh, transformation, light_dir);
+        // buf.set_mesh_filled_gray(mesh, light_dir);
         PpmImage con = PpmImage(buf);
         con.draw_to("output");
     }
@@ -86,3 +99,12 @@ int main(int argc, char **argv)
     //   << 17.0 << 18.0 << 19.0 << 20.0;
     //  << a << std::endl;
 }
+
+// int main(int argc, char **argv)
+// {
+//     Vector3D a = {4, 5, 6};
+//     Matrix4D1 b = {a};
+//     Vector3D c = {b};
+//     std::cout << b << std::endl;
+//     std::cout << c << std::endl;
+// }
