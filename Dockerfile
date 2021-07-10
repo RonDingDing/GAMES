@@ -52,9 +52,10 @@ RUN ssh-keygen -t rsa -C "ronweasleyding@163.com" -f "/root/.ssh/id_rsa" -N ""
 RUN sudo echo "alias python=\"python3\"" >> /root/.bashrc
 RUN alias python=\"python3\"
 RUN sudo apt-get -y install python3-pip
-RUN sudo python3 -m pip install pillow
+RUN sudo python3 -m pip install pillow black
 RUN sudo apt-get -y install gdb
 
+RUN sudo apt-get install libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libglfw3-dev
 
 
 # 然后 passwd设置密码
