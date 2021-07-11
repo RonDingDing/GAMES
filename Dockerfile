@@ -8,7 +8,9 @@ RUN cp /etc/apt/sources.list /etc/apt/sources.list.bak && \
     echo "deb-src http://mirrors.163.com/ubuntu/ focal-security main restricted universe multiverse\n" >> etc/apt/sources.list && \
     echo "deb-src http://mirrors.163.com/ubuntu/ focal-updates main restricted universe multiverse\n" >> etc/apt/sources.list && \
     echo "deb-src http://mirrors.163.com/ubuntu/ focal-backports main restricted universe multiverse\n" >> etc/apt/sources.list 
+RUN echo "happy"
 RUN apt-get -y update
+RUN apt-get -y upgrade
 RUN apt-get -y install sudo
 RUN sudo apt-get -y install build-essential 
 RUN sudo apt-get -y install gcc-multilib 
@@ -54,8 +56,8 @@ RUN alias python=\"python3\"
 RUN sudo apt-get -y install python3-pip
 RUN sudo python3 -m pip install pillow black
 RUN sudo apt-get -y install gdb
-
-RUN sudo apt-get install libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libglfw3-dev
+RUN sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libglfw3-dev  
+RUN sudo apt-get install libglew-dev
 
 
 # 然后 passwd设置密码

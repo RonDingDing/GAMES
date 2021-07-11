@@ -52,9 +52,5 @@ def change_name():
 
 if __name__ == "__main__":
     change_name()
-    rm("__build__")
-    mkdir("__build__")
-    os.chdir("__build__")
-    os.system("cmake ../")
-    os.system(f"make -j{cpu_count()}")
-    os.system("./LearnOpenGL")
+    rm("../Debug")
+    rm("../Release")
