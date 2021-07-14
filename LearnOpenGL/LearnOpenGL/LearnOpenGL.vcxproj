@@ -19,7 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\4.first_shader.cpp" />
+    <None Include="res\shaders\Basic.shader" />
+    <None Include="res\shaders\Uniform.shader" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\11.vertex_array.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
