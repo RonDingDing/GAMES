@@ -34,6 +34,9 @@
     <ClCompile Include="src\12.put_everything_in_the_class\VertexBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\12.put_everything_in_the_class\Shader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\12.put_everything_in_the_class\IndexBuffer.h">
@@ -49,6 +52,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\12.put_everything_in_the_class\VertexBufferLayout.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\12.put_everything_in_the_class\Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
