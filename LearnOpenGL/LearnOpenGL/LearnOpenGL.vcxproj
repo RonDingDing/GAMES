@@ -23,18 +23,18 @@
     <None Include="res\shaders\Uniform.shader" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\12.put_everything in the class\Application.cpp" />
-    <ClCompile Include="src\12.put_everything in the class\IndexBuffer.cpp" />
-    <ClCompile Include="src\12.put_everything in the class\Renderer.cpp" />
-    <ClCompile Include="src\12.put_everything in the class\VertexArray.cpp" />
-    <ClCompile Include="src\12.put_everything in the class\VertexBuffer.cpp" />
+    <ClCompile Include="src\12.put_everything_in_the_class\Application.cpp" />
+    <ClCompile Include="src\12.put_everything_in_the_class\IndexBuffer.cpp" />
+    <ClCompile Include="src\12.put_everything_in_the_class\Renderer.cpp" />
+    <ClCompile Include="src\12.put_everything_in_the_class\VertexArray.cpp" />
+    <ClCompile Include="src\12.put_everything_in_the_class\VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\12.put_everything in the class\IndexBuffer.h" />
-    <ClInclude Include="src\12.put_everything in the class\Renderer.h" />
-    <ClInclude Include="src\12.put_everything in the class\VertexBuffer.h" />
-    <ClInclude Include="src\12.put_everything in the class\VertexArray.h" />
-    <ClInclude Include="src\12.put_everything in the class\VertexBufferLayout.h" />
+    <ClInclude Include="src\12.put_everything_in_the_class\IndexBuffer.h" />
+    <ClInclude Include="src\12.put_everything_in_the_class\Renderer.h" />
+    <ClInclude Include="src\12.put_everything_in_the_class\VertexArray.h" />
+    <ClInclude Include="src\12.put_everything_in_the_class\VertexBuffer.h" />
+    <ClInclude Include="src\12.put_everything_in_the_class\VertexBufferLayout.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalModuleDependencies>
       </AdditionalModuleDependencies>
     </ClCompile>
@@ -125,7 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalModuleDependencies>
       </AdditionalModuleDependencies>
     </ClCompile>

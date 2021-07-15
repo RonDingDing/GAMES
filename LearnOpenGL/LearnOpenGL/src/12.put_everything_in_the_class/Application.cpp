@@ -1,13 +1,13 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "VertexArray.h"
+
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 
 struct ShaderProgramSource {
