@@ -23,7 +23,18 @@
     <None Include="res\shaders\Uniform.shader" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\11.vertex_array.cpp" />
+    <ClCompile Include="src\12.put_everything in the class\Application.cpp" />
+    <ClCompile Include="src\12.put_everything in the class\IndexBuffer.cpp" />
+    <ClCompile Include="src\12.put_everything in the class\Renderer.cpp" />
+    <ClCompile Include="src\12.put_everything in the class\VertexArray.cpp" />
+    <ClCompile Include="src\12.put_everything in the class\VertexBuffer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\12.put_everything in the class\IndexBuffer.h" />
+    <ClInclude Include="src\12.put_everything in the class\Renderer.h" />
+    <ClInclude Include="src\12.put_everything in the class\VertexBuffer.h" />
+    <ClInclude Include="src\12.put_everything in the class\VertexArray.h" />
+    <ClInclude Include="src\12.put_everything in the class\VertexBufferLayout.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
