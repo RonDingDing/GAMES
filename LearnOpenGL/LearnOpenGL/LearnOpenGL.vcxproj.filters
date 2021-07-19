@@ -17,45 +17,63 @@
   <ItemGroup>
     <None Include="res\shaders\Basic.shader" />
     <None Include="res\shaders\Uniform.shader" />
+    <None Include="res\shaders\Texture.shader" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\12.put_everything_in_the_class\Application.cpp">
+    <ClCompile Include="src\vendor\stb_image\stb_image.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\12.put_everything_in_the_class\IndexBuffer.cpp">
+    <ClCompile Include="src\13.textures\Application.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\12.put_everything_in_the_class\Renderer.cpp">
+    <ClCompile Include="src\13.textures\IndexBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\12.put_everything_in_the_class\VertexArray.cpp">
+    <ClCompile Include="src\13.textures\Renderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\12.put_everything_in_the_class\VertexBuffer.cpp">
+    <ClCompile Include="src\13.textures\Shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\12.put_everything_in_the_class\Shader.cpp">
+    <ClCompile Include="src\13.textures\Texture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\13.textures\VertexArray.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\13.textures\VertexBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\12.put_everything_in_the_class\IndexBuffer.h">
+    <ClInclude Include="src\vendor\stb_image\stb_image.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\12.put_everything_in_the_class\Renderer.h">
+    <ClInclude Include="src\13.textures\IndexBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\12.put_everything_in_the_class\VertexArray.h">
+    <ClInclude Include="src\13.textures\Renderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\12.put_everything_in_the_class\VertexBuffer.h">
+    <ClInclude Include="src\13.textures\Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\12.put_everything_in_the_class\VertexBufferLayout.h">
+    <ClInclude Include="src\13.textures\Texture.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\12.put_everything_in_the_class\Shader.h">
+    <ClInclude Include="src\13.textures\VertexArray.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\13.textures\VertexBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\13.textures\VertexBufferLayout.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\textures\ChernoLogo.png">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>
